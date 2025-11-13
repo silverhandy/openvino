@@ -22,7 +22,6 @@ namespace template_plugin {
 namespace {
 
 constexpr double kEpsilon = 1e-6;
-constexpr double kAlpha = 0.2;  // moving average smoothing factor
 
 ov::ProfilingInfo make_runtime_profiling(const std::string& name, std::chrono::steady_clock::duration duration) {
     ov::ProfilingInfo info;
@@ -57,20 +56,6 @@ ov::Any parse_value(const std::string& value) {
         }
     }
     return value;
-}
-
-std::size_t parse_size_t(const std::map<std::string, std::string>& params,
-                         const std::string& key,
-                         std::size_t fallback) {
-    auto it = params.find(key);
-    if (it == params.end()) {
-        return fallback;
-    }
-    try {
-        return static_cast<std::size_t>(std::stoull(it->second));
-    } catch (...) {
-        return fallback;
-    }
 }
 
 double parse_double(const std::map<std::string, std::string>& params,
@@ -131,15 +116,18 @@ std::shared_ptr<XschedCore> XschedCore::create(const Plugin& plugin,
         DeviceGroup group;
         group.label = group_cfg.label.empty() ? std::string{"group"} : group_cfg.label;
         group.params.type = parse_strategy(group_cfg.strategy);
-        group.params.population = parse_size_t(group_cfg.parameters, "population", group.params.population);
-        group.params.iteration_limit =
-            parse_size_t(group_cfg.parameters, "iterations", group.params.iteration_limit);
-        group.params.mutation_rate = parse_double(group_cfg.parameters, "mutation", group.params.mutation_rate);
-        group.params.differential_weight =
-            parse_double(group_cfg.parameters, "differential", group.params.differential_weight);
-        group.params.inertia = parse_double(group_cfg.parameters, "inertia", group.params.inertia);
-        group.params.cognitive = parse_double(group_cfg.parameters, "cognitive", group.params.cognitive);
-        group.params.social = parse_double(group_cfg.parameters, "social", group.params.social);
+        group.params.smoothing = parse_double(group_cfg.parameters, "smoothing", group.params.smoothing);
+        group.params.min_weight = parse_double(group_cfg.parameters, "min_weight", group.params.min_weight);
+        group.params.max_weight = parse_double(group_cfg.parameters, "max_weight", group.params.max_weight);
+        if (group.params.smoothing <= 0.0 || group.params.smoothing >= 1.0) {
+            group.params.smoothing = std::clamp(group.params.smoothing, 0.01, 0.9);
+        }
+        if (group.params.min_weight <= 0.0) {
+            group.params.min_weight = 0.01;
+        }
+        if (group.params.max_weight < group.params.min_weight) {
+            group.params.max_weight = std::max(group.params.min_weight, 1.0);
+        }
         group.rng.seed(rd());
 
         for (const auto& device_cfg : group_cfg.devices) {
@@ -188,7 +176,6 @@ std::shared_ptr<XschedCore> XschedCore::create(const Plugin& plugin,
         }
 
         if (!group.devices.empty()) {
-            group.global_best_weights.resize(group.devices.size(), 1.0);
             groups.emplace_back(std::move(group));
         }
     };
@@ -323,17 +310,13 @@ XschedCore::StrategyType XschedCore::parse_strategy(const std::string& value) {
     if (upper == "ROUNDROBIN" || upper == "RR" || upper.empty()) {
         return StrategyType::RoundRobin;
     }
-    if (upper == "LOADBALANCE" || upper == "LB" || upper == "LOAD-BALANCE") {
-        return StrategyType::LoadBalance;
+    if (upper == "LOADBALANCE" || upper == "LB" || upper == "LOAD-BALANCE" || upper == "LEASTLOADED" ||
+        upper == "LEAST-LOADED") {
+        return StrategyType::LeastLoaded;
     }
-    if (upper == "GA" || upper == "GENETIC") {
-        return StrategyType::Genetic;
-    }
-    if (upper == "DE" || upper == "DIFFERENTIAL") {
-        return StrategyType::Differential;
-    }
-    if (upper == "PSO" || upper == "PARTICLE") {
-        return StrategyType::Particle;
+    if (upper == "GA" || upper == "GENETIC" || upper == "DE" || upper == "DIFFERENTIAL" ||
+        upper == "PSO" || upper == "PARTICLE" || upper == "ADAPTIVE" || upper == "WEIGHTED") {
+        return StrategyType::Adaptive;
     }
     return StrategyType::RoundRobin;
 }
@@ -372,12 +355,10 @@ std::shared_ptr<XschedCore::DeviceRuntime> XschedCore::select_device(DeviceGroup
     switch (group.params.type) {
     case StrategyType::RoundRobin:
         return select_round_robin(group);
-    case StrategyType::LoadBalance:
-        return select_load_balance(group);
-    case StrategyType::Genetic:
-    case StrategyType::Differential:
-    case StrategyType::Particle:
-        return select_weighted(group);
+    case StrategyType::LeastLoaded:
+        return select_least_loaded(group);
+    case StrategyType::Adaptive:
+        return select_adaptive(group);
     default:
         return select_round_robin(group);
     }
@@ -392,7 +373,7 @@ std::shared_ptr<XschedCore::DeviceRuntime> XschedCore::select_round_robin(Device
     return group.devices[index];
 }
 
-std::shared_ptr<XschedCore::DeviceRuntime> XschedCore::select_load_balance(DeviceGroup& group) {
+std::shared_ptr<XschedCore::DeviceRuntime> XschedCore::select_least_loaded(DeviceGroup& group) {
     std::shared_ptr<DeviceRuntime> best;
     double best_score = std::numeric_limits<double>::max();
     for (auto& candidate : group.devices) {
@@ -407,117 +388,53 @@ std::shared_ptr<XschedCore::DeviceRuntime> XschedCore::select_load_balance(Devic
     return best;
 }
 
-std::shared_ptr<XschedCore::DeviceRuntime> XschedCore::select_weighted(DeviceGroup& group) {
+std::shared_ptr<XschedCore::DeviceRuntime> XschedCore::select_adaptive(DeviceGroup& group) {
     if (group.devices.empty()) {
         return nullptr;
     }
 
-    std::vector<double> weights;
-    weights.reserve(group.devices.size());
+    double total = 0.0;
     for (const auto& device : group.devices) {
         double weight = device->weight.load(std::memory_order_relaxed);
         if (!std::isfinite(weight) || weight <= 0.0) {
             weight = 1.0;
         }
-        weights.push_back(weight);
+        total += weight;
     }
 
-    std::discrete_distribution<std::size_t> distribution(weights.begin(), weights.end());
-    auto index = distribution(group.rng) % group.devices.size();
-    return group.devices[index];
+    if (total <= 0.0) {
+        return select_least_loaded(group);
+    }
+
+    std::uniform_real_distribution<double> dist(0.0, total);
+    double threshold = dist(group.rng);
+    double cumulative = 0.0;
+    for (auto& device : group.devices) {
+        double weight = device->weight.load(std::memory_order_relaxed);
+        if (!std::isfinite(weight) || weight <= 0.0) {
+            weight = 1.0;
+        }
+        cumulative += weight;
+        if (threshold <= cumulative) {
+            return device;
+        }
+    }
+
+    return group.devices.back();
 }
 
 void XschedCore::update_strategy(DeviceGroup& group, DeviceRuntime& device, double latency_ms) {
-    auto new_avg = device.moving_avg.load(std::memory_order_relaxed);
-    if (new_avg <= 0.0) {
-        new_avg = latency_ms;
-    } else {
-        new_avg = (1.0 - kAlpha) * new_avg + kAlpha * latency_ms;
+    const double smoothing = group.params.smoothing;
+    double previous_avg = device.moving_avg.load(std::memory_order_relaxed);
+    double updated_avg = latency_ms;
+    if (previous_avg > 0.0) {
+        updated_avg = (1.0 - smoothing) * previous_avg + smoothing * latency_ms;
     }
-    device.moving_avg.store(new_avg, std::memory_order_relaxed);
+    device.moving_avg.store(updated_avg, std::memory_order_relaxed);
 
-    {
-        std::lock_guard<std::mutex> history_lock(device.history_mutex);
-        device.history.push_back(latency_ms);
-        while (device.history.size() > group.params.population) {
-            device.history.pop_front();
-        }
-    }
-
-    double history_avg = 0.0;
-    {
-        std::lock_guard<std::mutex> history_lock(device.history_mutex);
-        if (!device.history.empty()) {
-            for (double sample : device.history) {
-                history_avg += sample;
-            }
-            history_avg /= static_cast<double>(device.history.size());
-        } else {
-            history_avg = new_avg;
-        }
-    }
-
-    const double fitness = history_avg > kEpsilon ? 1.0 / (history_avg + kEpsilon) : 1.0;
-    auto personal_best = device.personal_best.load(std::memory_order_relaxed);
-    if (fitness > personal_best) {
-        device.personal_best.store(fitness, std::memory_order_relaxed);
-        personal_best = fitness;
-    }
-
-    switch (group.params.type) {
-    case StrategyType::RoundRobin:
-    case StrategyType::LoadBalance:
-        device.weight.store(std::max(fitness, kEpsilon), std::memory_order_relaxed);
-        break;
-    case StrategyType::Genetic: {
-        const double current_weight = device.weight.load(std::memory_order_relaxed);
-        const double mutated = 0.7 * current_weight + 0.3 * fitness * (1.0 + group.params.mutation_rate);
-        device.weight.store(std::max(mutated, kEpsilon), std::memory_order_relaxed);
-        break;
-    }
-    case StrategyType::Differential: {
-        if (group.devices.size() >= 3) {
-            std::uniform_int_distribution<std::size_t> dist(0, group.devices.size() - 1);
-            std::size_t a = dist(group.rng);
-            std::size_t b = dist(group.rng);
-            std::size_t c = dist(group.rng);
-            while (a == b) b = dist(group.rng);
-            while (c == a || c == b) c = dist(group.rng);
-            const double weight_a = group.devices[a]->weight.load(std::memory_order_relaxed);
-            const double weight_b = group.devices[b]->weight.load(std::memory_order_relaxed);
-            const double weight_c = group.devices[c]->weight.load(std::memory_order_relaxed);
-            const double mutated = weight_a + group.params.differential_weight * (weight_b - weight_c);
-            device.weight.store(std::max(mutated, kEpsilon), std::memory_order_relaxed);
-        } else {
-            device.weight.store(std::max(fitness, kEpsilon), std::memory_order_relaxed);
-        }
-        break;
-    }
-    case StrategyType::Particle: {
-        std::uniform_real_distribution<double> dist(0.0, 1.0);
-        double weight = device.weight.load(std::memory_order_relaxed);
-        double velocity = device.velocity.load(std::memory_order_relaxed);
-        const double global_best = group.global_best;
-        velocity = group.params.inertia * velocity +
-                   group.params.cognitive * dist(group.rng) * (personal_best - weight) +
-                   group.params.social * dist(group.rng) * (global_best - weight);
-        weight = std::max(weight + velocity, kEpsilon);
-        device.velocity.store(velocity, std::memory_order_relaxed);
-        device.weight.store(weight, std::memory_order_relaxed);
-        break;
-    }
-    default:
-        break;
-    }
-
-    if (fitness > group.global_best) {
-        group.global_best = fitness;
-        group.global_best_weights.clear();
-        group.global_best_weights.reserve(group.devices.size());
-        for (const auto& dev : group.devices) {
-            group.global_best_weights.push_back(dev->weight.load(std::memory_order_relaxed));
-        }
-    }
+    double weight = 1.0 / std::max(updated_avg, kEpsilon);
+    weight = std::clamp(weight, group.params.min_weight, group.params.max_weight);
+    device.weight.store(weight, std::memory_order_relaxed);
 }
 
 XResult XschedCore::launch_callback(HwQueueHandle /*hwq*/, void* data) noexcept {

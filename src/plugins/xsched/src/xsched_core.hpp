@@ -7,7 +7,6 @@
 #include <atomic>
 #include <condition_variable>
 #include <chrono>
-#include <deque>
 #include <functional>
 #include <future>
 #include <map>
@@ -42,10 +41,8 @@ class XschedCore : public std::enable_shared_from_this<XschedCore> {
 public:
     enum class StrategyType {
         RoundRobin,
-        LoadBalance,
-        Genetic,
-        Differential,
-        Particle
+        LeastLoaded,
+        Adaptive
     };
 
     ~XschedCore();
@@ -62,13 +59,9 @@ public:
 
     struct StrategyParams {
         StrategyType type = StrategyType::RoundRobin;
-        std::size_t population = 8;
-        std::size_t iteration_limit = 32;
-        double mutation_rate = 0.35;
-        double differential_weight = 0.5;
-        double inertia = 0.6;
-        double cognitive = 1.2;
-        double social = 1.6;
+        double smoothing = 0.2;
+        double min_weight = 0.05;
+        double max_weight = 10.0;
     };
 
     struct DeviceRuntime {
@@ -83,10 +76,6 @@ public:
         std::atomic<double> moving_avg{0.0};
         std::atomic<double> last_latency{0.0};
         std::atomic<double> weight{1.0};
-        std::atomic<double> velocity{0.0};
-        std::atomic<double> personal_best{0.0};
-        std::deque<double> history;
-        std::mutex history_mutex;
     };
 
     struct DeviceGroup {
@@ -101,8 +90,6 @@ public:
             round_robin_cursor.store(other.round_robin_cursor.load(std::memory_order_relaxed),
                                      std::memory_order_relaxed);
             other.round_robin_cursor.store(0, std::memory_order_relaxed);
-            global_best = other.global_best;
-            global_best_weights = std::move(other.global_best_weights);
         }
         DeviceGroup& operator=(DeviceGroup&& other) noexcept {
             if (this != &other) {
@@ -113,8 +100,6 @@ public:
                 round_robin_cursor.store(other.round_robin_cursor.load(std::memory_order_relaxed),
                                          std::memory_order_relaxed);
                 other.round_robin_cursor.store(0, std::memory_order_relaxed);
-                global_best = other.global_best;
-                global_best_weights = std::move(other.global_best_weights);
             }
             return *this;
         }
@@ -125,8 +110,6 @@ public:
         std::mutex mutex;
         std::mt19937 rng;
         std::atomic<uint64_t> round_robin_cursor{0};
-        double global_best = 0.0;
-        std::vector<double> global_best_weights;
     };
 
 private:
@@ -155,8 +138,8 @@ private:
 
     std::shared_ptr<DeviceRuntime> select_device(DeviceGroup& group);
     std::shared_ptr<DeviceRuntime> select_round_robin(DeviceGroup& group);
-    std::shared_ptr<DeviceRuntime> select_load_balance(DeviceGroup& group);
-    std::shared_ptr<DeviceRuntime> select_weighted(DeviceGroup& group);
+    std::shared_ptr<DeviceRuntime> select_least_loaded(DeviceGroup& group);
+    std::shared_ptr<DeviceRuntime> select_adaptive(DeviceGroup& group);
 
     void update_strategy(DeviceGroup& group, DeviceRuntime& device, double latency_ms);
 

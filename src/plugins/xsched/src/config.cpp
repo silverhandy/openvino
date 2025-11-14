@@ -924,7 +924,37 @@ Configuration::Configuration(const ov::AnyMap& config, const Configuration& defa
                 OPENVINO_THROW("Wrong value ", value.as<std::string>(), "for property key ", key);
             }
         } else if (ov::device::id == key) {
-            device_id = std::stoi(value.as<std::string>());
+            const auto raw_id = ov::util::trim(value.as<std::string>());
+            int parsed_id = 0;
+            if (!raw_id.empty()) {
+                try {
+                    size_t processed = 0;
+                    parsed_id = std::stoi(raw_id, &processed);
+                    if (processed != raw_id.size()) {
+                        throw std::invalid_argument{"non-numeric characters present"};
+                    }
+                } catch (const std::exception&) {
+                    // Support composite identifiers such as GPU.0 by pulling out the trailing digits
+                    std::string suffix_digits;
+                    suffix_digits.reserve(raw_id.size());
+                    for (auto it = raw_id.rbegin(); it != raw_id.rend(); ++it) {
+                        if (std::isdigit(static_cast<unsigned char>(*it))) {
+                            suffix_digits.push_back(*it);
+                        } else if (!suffix_digits.empty()) {
+                            break;
+                        }
+                    }
+                    if (!suffix_digits.empty()) {
+                        std::reverse(suffix_digits.begin(), suffix_digits.end());
+                        try {
+                            parsed_id = std::stoi(suffix_digits);
+                        } catch (const std::exception&) {
+                            parsed_id = 0;
+                        }
+                    }
+                }
+            }
+            device_id = parsed_id;
             OPENVINO_ASSERT(device_id <= 0, "Device ID ", device_id, " is not supported");
         } else if (ov::device::priorities == key) {
             set_device_priorities(value, throwOnUnsupported);

@@ -11,7 +11,7 @@
 #include "openvino/runtime/tensor.hpp"
 
 namespace ov {
-namespace template_plugin {
+namespace xsched_plugin {
 
 class Plugin;
 class InferRequest;
@@ -50,7 +50,7 @@ private:
     friend class Plugin;
 
     void compile_model(const std::shared_ptr<ov::Model>& model);
-    std::shared_ptr<const Plugin> get_template_plugin() const;
+    std::shared_ptr<const Plugin> get_xsched_plugin() const;
     std::shared_ptr<XschedCore> get_runtime() const { return m_runtime; }
     void update_runtime_profiling();
 
@@ -62,5 +62,5 @@ private:
 };
 // ! [compiled_model:header]
 
-}  // namespace template_plugin
+}  // namespace xsched_plugin
 }  // namespace ov

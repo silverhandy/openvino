@@ -41,7 +41,7 @@ cmake --build <openvino_build> --target all -j
 cmake -S 3rd-party/openvino/src/plugins/xsched \
 	  -B 3rd-party/openvino/src/plugins/xsched/build \
 	  -DOpenVINODeveloperPackage_DIR=<openvino_build> \
-	  -DENABLE_TEMPLATE_REGISTRATION=ON
+	  -DENABLE_XSCHED_REGISTRATION=ON
 cmake --build 3rd-party/openvino/src/plugins/xsched/build --target install -j
 ```
 

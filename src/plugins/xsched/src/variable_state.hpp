@@ -10,7 +10,7 @@
 #include "openvino/runtime/so_ptr.hpp"
 
 namespace ov {
-namespace template_plugin {
+namespace xsched_plugin {
 
 class VariableState : public ov::IVariableState {
 public:
@@ -57,5 +57,5 @@ private:
     element::Type m_data_type;  // original type
     std::shared_ptr<op::util::VariableValue> m_variable_value;
 };
-}  // namespace template_plugin
+}  // namespace xsched_plugin
 }  // namespace ov

@@ -15,6 +15,7 @@ const char* DEVICE_NPU = "NPU";
 const char* DEVICE_BATCH = "BATCH";
 const char* DEVICE_MULTI = "MULTI";
 const char* DEVICE_TEMPLATE = "TEMPLATE";
+const char* DEVICE_XSCHED = "XSCHED";
 const char* DEVICE_HETERO = "HETERO";
 
 }  // namespace utils

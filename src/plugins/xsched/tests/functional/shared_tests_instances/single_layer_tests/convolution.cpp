@@ -52,7 +52,7 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(conv2DParams_ExplicitPadding,
                        ::testing::ValuesIn(model_types),
                        ::testing::Values(ov::test::static_shapes_to_test_representation({{1, 3, 30, 30}})),
-                       ::testing::Values(ov::test::utils::DEVICE_TEMPLATE)),
+                       ::testing::Values(ov::test::utils::DEVICE_XSCHED)),
     ConvolutionLayerTest::getTestCaseName);
 // ! [test_convolution:instantiate]
 
@@ -62,7 +62,7 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(conv2DParams_AutoPadValid,
                        ::testing::ValuesIn(model_types),
                        ::testing::Values(ov::test::static_shapes_to_test_representation({{1, 3, 30, 30}})),
-                       ::testing::Values(ov::test::utils::DEVICE_TEMPLATE)),
+                       ::testing::Values(ov::test::utils::DEVICE_XSCHED)),
     ConvolutionLayerTest::getTestCaseName);
 
 /* ============= 3D Convolution ============= */
@@ -95,7 +95,7 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(conv3DParams_ExplicitPadding,
                        ::testing::ValuesIn(model_types),
                        ::testing::Values(ov::test::static_shapes_to_test_representation({{1, 3, 10, 10, 10}})),
-                       ::testing::Values(ov::test::utils::DEVICE_TEMPLATE)),
+                       ::testing::Values(ov::test::utils::DEVICE_XSCHED)),
     ConvolutionLayerTest::getTestCaseName);
 
 INSTANTIATE_TEST_SUITE_P(
@@ -104,7 +104,7 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(conv3DParams_AutoPadValid,
                        ::testing::ValuesIn(model_types),
                        ::testing::Values(ov::test::static_shapes_to_test_representation({{1, 3, 10, 10, 10}})),
-                       ::testing::Values(ov::test::utils::DEVICE_TEMPLATE)),
+                       ::testing::Values(ov::test::utils::DEVICE_XSCHED)),
     ConvolutionLayerTest::getTestCaseName);
 
 }  // namespace

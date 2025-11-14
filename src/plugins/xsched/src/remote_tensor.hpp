@@ -5,7 +5,7 @@
 #include "openvino/runtime/iremote_context.hpp"
 
 namespace ov {
-namespace template_plugin {
+namespace xsched_plugin {
 
 template <class T>
 class VectorTensorImpl;
@@ -70,5 +70,5 @@ public:
 };
 // ! [vector_impl:implementation]
 
-}  // namespace template_plugin
+}  // namespace xsched_plugin
 }  // namespace ov

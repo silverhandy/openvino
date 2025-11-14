@@ -21,7 +21,7 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::Values(std::vector<std::pair<std::vector<size_t>, std::vector<size_t>>>{
                            {{1, 4, 20, 20}, {1, 10, 18, 18}},
                            {{2, 4, 20, 20}, {2, 10, 18, 18}}}),
-                       ::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                       ::testing::Values(ov::test::utils::DEVICE_XSCHED),
                        ::testing::ValuesIn(configs)),
     OVInferRequestDynamicTests::getTestCaseName);
 }  // namespace

@@ -21,7 +21,7 @@ if(DEFINED ENABLE_PLUGINS_XML AND NOT ENABLE_PLUGINS_XML)
     return()
 endif()
 
-ov_option(ENABLE_TEMPLATE_REGISTRATION "Enables registration of TEMPLATE plugin" OFF)
+ov_option(ENABLE_XSCHED_REGISTRATION "Enables registration of XSCHED plugin" OFF)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     ov_add_compiler_flags(-Wall)
@@ -41,6 +41,6 @@ endif()
 # install
 
 if(OpenVINODeveloperPackage_FOUND)
-    ov_cpack(template)
+    ov_cpack(xsched)
 endif()
 # [cmake:main]

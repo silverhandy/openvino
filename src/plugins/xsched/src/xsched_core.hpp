@@ -29,7 +29,7 @@
 #include "xsched/xqueue.h"
 
 namespace ov {
-namespace template_plugin {
+namespace xsched_plugin {
 
 class Plugin;
 class CompiledModel;
@@ -176,5 +176,5 @@ struct XschedPendingCommand {
     HwCommandHandle command = 0;
 };
 
-}  // namespace template_plugin
+}  // namespace xsched_plugin
 }  // namespace ov

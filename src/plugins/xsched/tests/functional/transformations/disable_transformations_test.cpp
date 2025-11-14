@@ -15,9 +15,9 @@
 #include "openvino/op/convert.hpp"
 #include "openvino/op/convert_like.hpp"
 #include "openvino/op/parameter.hpp"
-#include "template/properties.hpp"
+#include "xsched/properties.hpp"
 
-TEST(DisableTransformationsTests, TestTemplatePluginProperty) {
+TEST(DisableTransformationsTests, TestXSchedPluginProperty) {
     std::shared_ptr<ov::Model> m(nullptr), m_ref(nullptr);
     {
         auto data = std::make_shared<ov::op::v0::Parameter>(ov::element::f32, ov::Shape{3, 1, 2});
@@ -33,11 +33,11 @@ TEST(DisableTransformationsTests, TestTemplatePluginProperty) {
         m_ref = std::make_shared<ov::Model>(ov::OutputVector{cvt}, ov::ParameterVector{data});
     }
 
-    auto core = ov::test::utils::PluginCache::get().core("TEMPLATE");
+    auto core = ov::test::utils::PluginCache::get().core("XSCHED");
 
-    auto transformed_comp_model = core->compile_model(m, "TEMPLATE");
+    auto transformed_comp_model = core->compile_model(m, "XSCHED");
     auto no_transformed_comp_model =
-        core->compile_model(m, "TEMPLATE", ov::template_plugin::disable_transformations(true));
+        core->compile_model(m, "XSCHED", ov::xsched_plugin::disable_transformations(true));
 
     // Clone is needed only for comparison
     auto transformed_model = transformed_comp_model.get_runtime_model()->clone();

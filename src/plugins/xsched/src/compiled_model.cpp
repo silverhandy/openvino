@@ -19,7 +19,7 @@
 #include "xsched_core.hpp"
 
 // ! [compiled_model:ctor]
-ov::template_plugin::CompiledModel::CompiledModel(const std::shared_ptr<ov::Model>& model,
+ov::xsched_plugin::CompiledModel::CompiledModel(const std::shared_ptr<ov::Model>& model,
                                                   const std::shared_ptr<const ov::IPlugin>& plugin,
                                                   const ov::SoPtr<ov::IRemoteContext>& context,
                                                   const std::shared_ptr<ov::threading::ITaskExecutor>& task_executor,
@@ -29,7 +29,7 @@ ov::template_plugin::CompiledModel::CompiledModel(const std::shared_ptr<ov::Mode
       m_cfg(cfg),
       m_model(model),
       m_loaded_from_cache(loaded_from_cache) {
-    // TODO: if your plugin supports device ID (more that single instance of device can be on host machine)
+    // TODO: if your plugin supports device IDs (more than a single instance of the device can be on the host machine)
     // you should select proper device based on KEY_DEVICE_ID or automatic behavior
     // In this case, m_wait_executor should also be created per device.
     try {
@@ -46,7 +46,7 @@ ov::template_plugin::CompiledModel::CompiledModel(const std::shared_ptr<ov::Mode
 // forward declaration
 void transform_model(const std::shared_ptr<ov::Model>& model);
 
-void ov::template_plugin::CompiledModel::compile_model(const std::shared_ptr<ov::Model>& model) {
+void ov::xsched_plugin::CompiledModel::compile_model(const std::shared_ptr<ov::Model>& model) {
     // apply plugins transformations
     if (!m_cfg.disable_transformations)
         transform_model(model);
@@ -60,25 +60,25 @@ void ov::template_plugin::CompiledModel::compile_model(const std::shared_ptr<ov:
 
     // Perform any other steps like allocation and filling backend specific memory handles and so on
 
-    m_runtime = XschedCore::create(*get_template_plugin(), model, m_cfg);
+    m_runtime = XschedCore::create(*get_xsched_plugin(), model, m_cfg);
     update_runtime_profiling();
 }
 // ! [compiled_model:compile_model]
 
 // ! [compiled_model:create_sync_infer_request]
-std::shared_ptr<ov::ISyncInferRequest> ov::template_plugin::CompiledModel::create_sync_infer_request() const {
+std::shared_ptr<ov::ISyncInferRequest> ov::xsched_plugin::CompiledModel::create_sync_infer_request() const {
     return std::make_shared<InferRequest>(
-        std::static_pointer_cast<const ov::template_plugin::CompiledModel>(shared_from_this()));
+        std::static_pointer_cast<const ov::xsched_plugin::CompiledModel>(shared_from_this()));
 }
 // ! [compiled_model:create_sync_infer_request]
 
 // ! [compiled_model:create_infer_request]
-std::shared_ptr<ov::IAsyncInferRequest> ov::template_plugin::CompiledModel::create_infer_request() const {
+std::shared_ptr<ov::IAsyncInferRequest> ov::xsched_plugin::CompiledModel::create_infer_request() const {
     auto internal_request = create_sync_infer_request();
     auto async_infer_request = std::make_shared<AsyncInferRequest>(
-        std::static_pointer_cast<ov::template_plugin::InferRequest>(internal_request),
+        std::static_pointer_cast<ov::xsched_plugin::InferRequest>(internal_request),
         get_task_executor(),
-        get_template_plugin()->m_waitExecutor,
+        get_xsched_plugin()->m_waitExecutor,
         get_callback_executor());
 
     return async_infer_request;
@@ -86,7 +86,7 @@ std::shared_ptr<ov::IAsyncInferRequest> ov::template_plugin::CompiledModel::crea
 // ! [compiled_model:create_infer_request]
 
 // ! [compiled_model:set_property]
-void ov::template_plugin::CompiledModel::set_property(const ov::AnyMap& properties) {
+void ov::xsched_plugin::CompiledModel::set_property(const ov::AnyMap& properties) {
     m_cfg = Configuration{properties, m_cfg};
     if (properties.count(ov::enable_profiling.name())) {
         update_runtime_profiling();
@@ -95,7 +95,7 @@ void ov::template_plugin::CompiledModel::set_property(const ov::AnyMap& properti
 // ! [compiled_model:set_property]
 
 // ! [compiled_model:get_runtime_model]
-std::shared_ptr<const ov::Model> ov::template_plugin::CompiledModel::get_runtime_model() const {
+std::shared_ptr<const ov::Model> ov::xsched_plugin::CompiledModel::get_runtime_model() const {
     auto model = m_model->clone();
     // Add execution information into the model
     size_t exec_order = 0;
@@ -124,16 +124,16 @@ std::shared_ptr<const ov::Model> ov::template_plugin::CompiledModel::get_runtime
 }
 // ! [compiled_model:get_runtime_model]
 
-std::shared_ptr<const ov::template_plugin::Plugin> ov::template_plugin::CompiledModel::get_template_plugin() const {
+std::shared_ptr<const ov::xsched_plugin::Plugin> ov::xsched_plugin::CompiledModel::get_xsched_plugin() const {
     auto plugin = get_plugin();
     OPENVINO_ASSERT(plugin);
-    auto template_plugin = std::static_pointer_cast<const ov::template_plugin::Plugin>(plugin);
-    OPENVINO_ASSERT(template_plugin);
-    return template_plugin;
+    auto xsched_plugin = std::static_pointer_cast<const ov::xsched_plugin::Plugin>(plugin);
+    OPENVINO_ASSERT(xsched_plugin);
+    return xsched_plugin;
 }
 
 // ! [compiled_model:get_property]
-ov::Any ov::template_plugin::CompiledModel::get_property(const std::string& name) const {
+ov::Any ov::xsched_plugin::CompiledModel::get_property(const std::string& name) const {
     const auto& default_ro_properties = []() {
         std::vector<ov::PropertyName> ro_properties{ov::model_name,
                                                     ov::supported_properties,
@@ -178,15 +178,15 @@ ov::Any ov::template_plugin::CompiledModel::get_property(const std::string& name
 }
 // ! [compiled_model:get_property]
 
-void ov::template_plugin::CompiledModel::update_runtime_profiling() {
+void ov::xsched_plugin::CompiledModel::update_runtime_profiling() {
     if (m_runtime) {
         m_runtime->enable_profiling(m_cfg.perf_count);
     }
 }
 
 // ! [compiled_model:export_model]
-void ov::template_plugin::CompiledModel::export_model(std::ostream& model_stream) const {
-    OV_ITT_SCOPED_TASK(itt::domains::TemplatePlugin, "CompiledModel::export_model");
+void ov::xsched_plugin::CompiledModel::export_model(std::ostream& model_stream) const {
+    OV_ITT_SCOPED_TASK(itt::domains::XSchedPlugin, "CompiledModel::export_model");
 
     std::stringstream xmlFile, binFile;
     ov::pass::Serialize serializer(xmlFile, binFile);

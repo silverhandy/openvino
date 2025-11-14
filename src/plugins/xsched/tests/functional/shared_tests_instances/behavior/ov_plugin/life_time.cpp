@@ -10,7 +10,7 @@ namespace {
 
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVHoldersTest,
-                         ::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                         ::testing::Values(ov::test::utils::DEVICE_XSCHED),
                          OVHoldersTest::getTestCaseName);
 
 }  // namespace

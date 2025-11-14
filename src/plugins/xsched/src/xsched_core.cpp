@@ -18,7 +18,7 @@
 #include "sync_infer_request.hpp"
 
 namespace ov {
-namespace template_plugin {
+namespace xsched_plugin {
 namespace {
 
 constexpr double kEpsilon = 1e-6;
@@ -170,7 +170,6 @@ std::shared_ptr<XschedCore> XschedCore::create(const Plugin& plugin,
             runtime->x_queue = xqueue;
             runtime->moving_avg.store(0.0);
             runtime->weight.store(1.0);
-            runtime->personal_best.store(0.0);
 
             group.devices.emplace_back(std::move(runtime));
         }
@@ -496,8 +495,15 @@ void XschedCore::execute_pending(XschedPendingCommand& pending) noexcept {
         }
     }
 
-    std::lock_guard<std::mutex> lock(m_pending_mutex);
-    m_pending.erase(pending.command);
+    {
+        std::lock_guard<std::mutex> lock(m_pending_mutex);
+        m_pending.erase(pending.command);
+    }
+
+    if (pending.command != 0) {
+        HwCommandDestroy(pending.command);
+        pending.command = 0;
+    }
 }
 
 void XschedCore::release_resources() {
@@ -516,5 +522,5 @@ void XschedCore::release_resources() {
     }
 }
 
-}  // namespace template_plugin
+}  // namespace xsched_plugin
 }  // namespace ov

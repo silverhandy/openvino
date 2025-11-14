@@ -8,6 +8,6 @@ using namespace ov::test;
 
 namespace {
 
-INSTANTIATE_TEST_SUITE_P(smoke, StatefulModelStateInLoopBody, ::testing::Values(ov::test::utils::DEVICE_TEMPLATE));
+INSTANTIATE_TEST_SUITE_P(smoke, StatefulModelStateInLoopBody, ::testing::Values(ov::test::utils::DEVICE_XSCHED));
 
 }  // namespace

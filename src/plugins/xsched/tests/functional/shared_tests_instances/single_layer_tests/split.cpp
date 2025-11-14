@@ -20,7 +20,7 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::Values(ov::element::f32),
                        ::testing::Values(ov::test::static_shapes_to_test_representation({{30, 30, 30, 30}})),
                        ::testing::Values(std::vector<size_t>({})),
-                       ::testing::Values(ov::test::utils::DEVICE_TEMPLATE)),
+                       ::testing::Values(ov::test::utils::DEVICE_XSCHED)),
     SplitLayerTest::getTestCaseName);
 
 }  // namespace

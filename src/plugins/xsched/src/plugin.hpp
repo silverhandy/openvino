@@ -12,7 +12,7 @@
 
 //! [plugin:header]
 namespace ov {
-namespace template_plugin {
+namespace xsched_plugin {
 
 class Plugin : public ov::IPlugin {
 public:
@@ -58,6 +58,6 @@ private:
     std::shared_ptr<ov::threading::ITaskExecutor> m_waitExecutor;
 };
 
-}  // namespace template_plugin
+}  // namespace xsched_plugin
 }  // namespace ov
    //! [plugin:header]

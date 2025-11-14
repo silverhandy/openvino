@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#ifdef OPENCV_TEMPLATE_TESTS
+#ifdef OPENCV_XSCHED_TESTS
 
 #    include <gtest/gtest.h>
 #    include <opencv2/imgproc/types_c.h>
@@ -409,4 +409,4 @@ TEST_F(PreprocessOpenCVReferenceTest, resize_f32_large_picture_cubic_small) {
     Exec();
 }
 
-#endif  // OPENCV_TEMPLATE_TESTS
+#endif  // OPENCV_XSCHED_TESTS

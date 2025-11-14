@@ -10,5 +10,5 @@ using namespace ov::preprocess;
 
 INSTANTIATE_TEST_SUITE_P(smoke_Preprocessing,
                          PreprocessingYUV2GreyTest,
-                         testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                         testing::Values(ov::test::utils::DEVICE_XSCHED),
                          PreprocessingYUV2GreyTest::getTestCaseName);

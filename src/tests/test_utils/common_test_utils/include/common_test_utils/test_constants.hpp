@@ -15,6 +15,7 @@ extern const char* DEVICE_NPU;
 extern const char* DEVICE_BATCH;
 extern const char* DEVICE_MULTI;
 extern const char* DEVICE_TEMPLATE;
+extern const char* DEVICE_XSCHED;
 extern const char* DEVICE_HETERO;
 
 const char OP_REPORT_FILENAME[] = "report_op";
@@ -23,6 +24,7 @@ const char REPORT_EXTENSION[] = ".xml";
 const char LST_EXTENSION[] = ".lst";
 
 const char TEMPLATE_LIB[] = "openvino_template_plugin";
+const char XSCHED_LIB[] = "openvino_xsched_plugin";
 
 const char DEVICE_SUFFIX_SEPARATOR = '.';
 

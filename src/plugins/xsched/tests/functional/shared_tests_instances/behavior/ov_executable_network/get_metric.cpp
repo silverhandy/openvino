@@ -14,7 +14,7 @@ namespace {
 // Executable Network GetMetric
 //
 
-std::vector<std::string> devices = {"TEMPLATE"};
+std::vector<std::string> devices = {"XSCHED"};
 
 INSTANTIATE_TEST_SUITE_P(smoke_OVClassCompiledModelGetPropertyTest,
                          OVClassCompiledModelGetPropertyTest,
@@ -30,10 +30,10 @@ INSTANTIATE_TEST_SUITE_P(smoke_OVClassCompiledModelGetIncorrectPropertyTest,
 
 INSTANTIATE_TEST_SUITE_P(smoke_OVClassCompiledModelGetConfigTest,
                          OVClassCompiledModelGetConfigTest,
-                         ::testing::Values(ov::test::utils::DEVICE_TEMPLATE));
+                         ::testing::Values(ov::test::utils::DEVICE_XSCHED));
 
 INSTANTIATE_TEST_SUITE_P(smoke_OVClassCompiledModelSetIncorrectConfigTest,
                          OVClassCompiledModelSetIncorrectConfigTest,
-                         ::testing::Values(ov::test::utils::DEVICE_TEMPLATE));
+                         ::testing::Values(ov::test::utils::DEVICE_XSCHED));
 
 }  // namespace

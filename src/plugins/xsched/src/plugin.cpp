@@ -16,7 +16,7 @@
 #include "openvino/util/common_util.hpp"
 #include "openvino/util/file_util.hpp"
 #include "remote_context.hpp"
-#include "template/properties.hpp"
+#include "xsched/properties.hpp"
 #include "transformations/common_optimizations/common_optimizations.hpp"
 #include "transformations/control_flow/unroll_if.hpp"
 #include "transformations/fp16_compression/convert_compression_only_to_legacy.hpp"
@@ -27,9 +27,9 @@
 #include "transformations/op_conversions/scaled_dot_product_attention_decomposition.hpp"
 
 namespace {
-static constexpr const char* wait_executor_name = "TemplateWaitExecutor";
-static constexpr const char* stream_executor_name = "TemplateStreamsExecutor";
-static constexpr const char* template_exclusive_executor = "TemplateExecutor";
+static constexpr const char* wait_executor_name = "XSchedWaitExecutor";
+static constexpr const char* stream_executor_name = "XSchedStreamsExecutor";
+static constexpr const char* xsched_exclusive_executor = "XSchedExecutor";
 
 uint64_t get_blob_data_size(std::istream& model) {
     uint64_t size = 0;
@@ -68,7 +68,7 @@ ov::Tensor get_model_weights(const ov::AnyMap& properties) {
     return weights;
 }
 
-std::shared_ptr<ov::Model> get_ov_model_from_blob(const ov::template_plugin::Plugin& plugin,
+std::shared_ptr<ov::Model> get_ov_model_from_blob(const ov::xsched_plugin::Plugin& plugin,
                                                   ov::Tensor& weights,
                                                   size_t offset,
                                                   const ov::AnyMap& properties) {
@@ -89,7 +89,7 @@ std::shared_ptr<ov::Model> get_ov_model_from_blob(const ov::template_plugin::Plu
 }  // namespace
 
 // ! [plugin:ctor]
-ov::template_plugin::Plugin::Plugin() {
+ov::xsched_plugin::Plugin::Plugin() {
     set_device_name("XSCHED");
 
     m_waitExecutor = get_executor_manager()->get_idle_cpu_streams_executor({wait_executor_name});
@@ -97,7 +97,7 @@ ov::template_plugin::Plugin::Plugin() {
 // ! [plugin:ctor]
 
 // ! [plugin:dtor]
-ov::template_plugin::Plugin::~Plugin() {
+ov::xsched_plugin::Plugin::~Plugin() {
     // Plugin should remove executors from executor cache to avoid threads number growth in the whole application
     get_executor_manager()->clear(stream_executor_name);
     get_executor_manager()->clear(wait_executor_name);
@@ -105,22 +105,22 @@ ov::template_plugin::Plugin::~Plugin() {
 // ! [plugin:dtor]
 
 // ! [plugin:create_context]
-ov::SoPtr<ov::IRemoteContext> ov::template_plugin::Plugin::create_context(const ov::AnyMap& remote_properties) const {
-    return std::make_shared<ov::template_plugin::RemoteContext>();
+ov::SoPtr<ov::IRemoteContext> ov::xsched_plugin::Plugin::create_context(const ov::AnyMap& remote_properties) const {
+    return std::make_shared<ov::xsched_plugin::RemoteContext>();
 }
 // ! [plugin:create_context]
 
 // ! [plugin:get_default_context]
-ov::SoPtr<ov::IRemoteContext> ov::template_plugin::Plugin::get_default_context(
+ov::SoPtr<ov::IRemoteContext> ov::xsched_plugin::Plugin::get_default_context(
     const ov::AnyMap& remote_properties) const {
-    return std::make_shared<ov::template_plugin::RemoteContext>();
+    return std::make_shared<ov::xsched_plugin::RemoteContext>();
 }
 // ! [plugin:get_default_context]
 
 // ! [plugin:transform_model]
 void transform_model(const std::shared_ptr<ov::Model>& model) {
     // Perform common optimizations and device-specific transformations
-    ov::pass::Manager passManager("Plugin:Template");
+    ov::pass::Manager passManager("Plugin:XSched");
     // Example: register CommonOptimizations transformation from transformations library
     passManager.register_pass<ov::pass::CommonOptimizations>();
     // Disable some transformations
@@ -148,7 +148,7 @@ void transform_model(const std::shared_ptr<ov::Model>& model) {
 // ! [plugin:transform_model]
 
 // ! [plugin:compile_model]
-std::shared_ptr<ov::ICompiledModel> ov::template_plugin::Plugin::compile_model(
+std::shared_ptr<ov::ICompiledModel> ov::xsched_plugin::Plugin::compile_model(
     const std::shared_ptr<const ov::Model>& model,
     const ov::AnyMap& properties) const {
     return compile_model(model, properties, {});
@@ -156,11 +156,11 @@ std::shared_ptr<ov::ICompiledModel> ov::template_plugin::Plugin::compile_model(
 // ! [plugin:compile_model]
 
 // ! [plugin:compile_model_with_remote]
-std::shared_ptr<ov::ICompiledModel> ov::template_plugin::Plugin::compile_model(
+std::shared_ptr<ov::ICompiledModel> ov::xsched_plugin::Plugin::compile_model(
     const std::shared_ptr<const ov::Model>& model,
     const ov::AnyMap& properties,
     const ov::SoPtr<ov::IRemoteContext>& context) const {
-    OV_ITT_SCOPED_TASK(itt::domains::TemplatePlugin, "Plugin::compile_model");
+    OV_ITT_SCOPED_TASK(itt::domains::XSchedPlugin, "Plugin::compile_model");
 
     Configuration fullConfig;
     {
@@ -185,7 +185,7 @@ std::shared_ptr<ov::ICompiledModel> ov::template_plugin::Plugin::compile_model(
         shared_from_this(),
         context,
         fullConfig.exclusive_async_requests
-            ? get_executor_manager()->get_executor(template_exclusive_executor)
+            ? get_executor_manager()->get_executor(xsched_exclusive_executor)
             : get_executor_manager()->get_idle_cpu_streams_executor(streamsExecutorConfig),
         fullConfig,
         false);
@@ -193,18 +193,18 @@ std::shared_ptr<ov::ICompiledModel> ov::template_plugin::Plugin::compile_model(
 // ! [plugin:compile_model_with_remote]
 
 // ! [plugin:import_model]
-std::shared_ptr<ov::ICompiledModel> ov::template_plugin::Plugin::import_model(std::istream& model,
+std::shared_ptr<ov::ICompiledModel> ov::xsched_plugin::Plugin::import_model(std::istream& model,
                                                                               const ov::AnyMap& properties) const {
     return import_model(model, {}, properties);
 }
 // ! [plugin:import_model]
 
 // ! [plugin:import_model_with_remote]
-std::shared_ptr<ov::ICompiledModel> ov::template_plugin::Plugin::import_model(
+std::shared_ptr<ov::ICompiledModel> ov::xsched_plugin::Plugin::import_model(
     std::istream& model,
     const ov::SoPtr<ov::IRemoteContext>& context,
     const ov::AnyMap& properties) const {
-    OV_ITT_SCOPED_TASK(itt::domains::TemplatePlugin, "Plugin::import_model");
+    OV_ITT_SCOPED_TASK(itt::domains::XSchedPlugin, "Plugin::import_model");
 
     // check ov::loaded_from_cache property and erase it due to not needed any more.
     auto _properties = properties;
@@ -261,14 +261,14 @@ std::shared_ptr<ov::ICompiledModel> ov::template_plugin::Plugin::import_model(
 }
 // ! [plugin:import_model_with_remote]
 
-std::shared_ptr<ov::ICompiledModel> ov::template_plugin::Plugin::import_model(const ov::Tensor& model,
+std::shared_ptr<ov::ICompiledModel> ov::xsched_plugin::Plugin::import_model(const ov::Tensor& model,
                                                                               const ov::AnyMap& properties) const {
     ov::SharedStreamBuffer buffer{reinterpret_cast<char*>(model.data()), model.get_byte_size()};
     std::istream stream{&buffer};
     return import_model(stream, properties);
 }
 
-std::shared_ptr<ov::ICompiledModel> ov::template_plugin::Plugin::import_model(
+std::shared_ptr<ov::ICompiledModel> ov::xsched_plugin::Plugin::import_model(
     const ov::Tensor& model,
     const ov::SoPtr<ov::IRemoteContext>& context,
     const ov::AnyMap& properties) const {
@@ -278,9 +278,9 @@ std::shared_ptr<ov::ICompiledModel> ov::template_plugin::Plugin::import_model(
 }
 
 // ! [plugin:query_model]
-ov::SupportedOpsMap ov::template_plugin::Plugin::query_model(const std::shared_ptr<const ov::Model>& model,
+ov::SupportedOpsMap ov::xsched_plugin::Plugin::query_model(const std::shared_ptr<const ov::Model>& model,
                                                              const ov::AnyMap& properties) const {
-    OV_ITT_SCOPED_TASK(itt::domains::TemplatePlugin, "Plugin::query_model");
+    OV_ITT_SCOPED_TASK(itt::domains::XSchedPlugin, "Plugin::query_model");
 
     Configuration fullConfig{properties, m_cfg, false};
 
@@ -332,13 +332,13 @@ ov::SupportedOpsMap ov::template_plugin::Plugin::query_model(const std::shared_p
 // ! [plugin:query_model]
 
 // ! [plugin:set_property]
-void ov::template_plugin::Plugin::set_property(const ov::AnyMap& properties) {
+void ov::xsched_plugin::Plugin::set_property(const ov::AnyMap& properties) {
     m_cfg = Configuration{properties, m_cfg};
 }
 // ! [plugin:set_property]
 
 // ! [plugin:get_property]
-ov::Any ov::template_plugin::Plugin::get_property(const std::string& name, const ov::AnyMap& arguments) const {
+ov::Any ov::xsched_plugin::Plugin::get_property(const std::string& name, const ov::AnyMap& arguments) const {
     const auto& default_ro_properties = []() {
         std::vector<ov::PropertyName> ro_properties{ov::available_devices,
                                                     ov::supported_properties,
@@ -360,7 +360,7 @@ ov::Any ov::template_plugin::Plugin::get_property(const std::string& name, const
             ov::hint::inference_precision,
             ov::hint::execution_mode,
             ov::num_streams,
-            ov::template_plugin::disable_transformations,
+            ov::xsched_plugin::disable_transformations,
             ov::log::level,
             ov::hint::model_priority,
             ov::hint::enable_hyper_threading,
@@ -393,7 +393,7 @@ ov::Any ov::template_plugin::Plugin::get_property(const std::string& name, const
         // TODO: fill list of available devices
         return decltype(ov::available_devices)::value_type{{""}};
     } else if (ov::device::full_name == name) {
-        return decltype(ov::device::full_name)::value_type{"Template Device Full Name"};
+    return decltype(ov::device::full_name)::value_type{"XSched Device Full Name"};
     } else if (ov::device::architecture == name) {
         // TODO: return device architecture for device specified by DEVICE_ID config
         return decltype(ov::device::architecture)::value_type{get_device_name()};
@@ -402,7 +402,7 @@ ov::Any ov::template_plugin::Plugin::get_property(const std::string& name, const
     } else if (ov::internal::caching_properties == name) {
         return decltype(ov::internal::caching_properties)::value_type{ov::device::architecture};
     } else if (ov::device::capabilities == name) {
-        // TODO: fill actual list of supported capabilities: e.g. Template device supports only FP32 and EXPORT_IMPORT
+    // TODO: populate the precise capability list for the XSCHED device (e.g. FP32, EXPORT_IMPORT).
         return decltype(ov::device::capabilities)::value_type{ov::device::capability::FP32,
                                                               ov::device::capability::EXPORT_IMPORT};
     } else if (ov::execution_devices == name) {
@@ -416,6 +416,6 @@ ov::Any ov::template_plugin::Plugin::get_property(const std::string& name, const
 // ! [plugin:get_property]
 
 // ! [plugin:create_plugin_engine]
-static const ov::Version version = {CI_BUILD_NUMBER, "openvino_template_plugin"};
-OV_DEFINE_PLUGIN_CREATE_FUNCTION(ov::template_plugin::Plugin, version)
+static const ov::Version version = {CI_BUILD_NUMBER, "openvino_xsched_plugin"};
+OV_DEFINE_PLUGIN_CREATE_FUNCTION(ov::xsched_plugin::Plugin, version)
 // ! [plugin:create_plugin_engine]

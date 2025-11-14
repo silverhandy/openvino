@@ -25,7 +25,7 @@ const std::vector<ov::AnyMap> configs = {
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVCompiledGraphImportExportTest,
                          ::testing::Combine(::testing::ValuesIn(netPrecisions),
-                                            ::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                                            ::testing::Values(ov::test::utils::DEVICE_XSCHED),
                                             ::testing::ValuesIn(configs)),
                          OVCompiledGraphImportExportTest::getTestCaseName);
 

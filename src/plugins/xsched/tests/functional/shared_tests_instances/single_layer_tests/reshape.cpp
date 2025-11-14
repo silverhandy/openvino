@@ -21,7 +21,7 @@ INSTANTIATE_TEST_SUITE_P(smoke_ReshapeCheckDynBatch,
                                             ::testing::ValuesIn(model_types),
                                             ::testing::Values(std::vector<size_t>({30, 30, 30, 30})),
                                             ::testing::Values(std::vector<int64_t>({30, 30, 30, 30})),
-                                            ::testing::Values(ov::test::utils::DEVICE_TEMPLATE)),
+                                            ::testing::Values(ov::test::utils::DEVICE_XSCHED)),
                          ReshapeLayerTest::getTestCaseName);
 
 INSTANTIATE_TEST_SUITE_P(smoke_ReshapeCheck,
@@ -30,7 +30,7 @@ INSTANTIATE_TEST_SUITE_P(smoke_ReshapeCheck,
                                             ::testing::ValuesIn(model_types),
                                             ::testing::Values(std::vector<size_t>({10, 10, 10, 10})),
                                             ::testing::Values(std::vector<int64_t>({10, 0, 100})),
-                                            ::testing::Values(ov::test::utils::DEVICE_TEMPLATE)),
+                                            ::testing::Values(ov::test::utils::DEVICE_XSCHED)),
                          ReshapeLayerTest::getTestCaseName);
 
 INSTANTIATE_TEST_SUITE_P(smoke_ReshapeCheckNegative,
@@ -39,6 +39,6 @@ INSTANTIATE_TEST_SUITE_P(smoke_ReshapeCheckNegative,
                                             ::testing::ValuesIn(model_types),
                                             ::testing::Values(std::vector<size_t>({10, 10, 10, 10})),
                                             ::testing::Values(std::vector<int64_t>({10, -1, 100})),
-                                            ::testing::Values(ov::test::utils::DEVICE_TEMPLATE)),
+                                            ::testing::Values(ov::test::utils::DEVICE_XSCHED)),
                          ReshapeLayerTest::getTestCaseName);
 }  // namespace

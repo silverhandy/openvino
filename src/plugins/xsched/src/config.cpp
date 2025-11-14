@@ -23,9 +23,9 @@
 #include "openvino/runtime/internal_properties.hpp"
 #include "openvino/runtime/properties.hpp"
 #include "openvino/util/common_util.hpp"
-#include "template/properties.hpp"
+#include "xsched/properties.hpp"
 
-using namespace ov::template_plugin;
+using namespace ov::xsched_plugin;
 
 namespace {
 using DeviceConfig = Configuration::DeviceConfig;
@@ -886,7 +886,7 @@ Configuration::Configuration() {}
 Configuration::Configuration(const ov::AnyMap& config, const Configuration& defaultCfg, bool throwOnUnsupported) {
     *this = defaultCfg;
     for (auto&& [key, value] : config) {
-        if (ov::template_plugin::disable_transformations == key) {
+        if (ov::xsched_plugin::disable_transformations == key) {
             disable_transformations = value.as<bool>();
         } else if (ov::internal::exclusive_async_requests == key) {
             exclusive_async_requests = value.as<bool>();
@@ -1012,7 +1012,7 @@ ov::Any Configuration::Get(const std::string& name) const {
         return {perf_count};
     } else if (name == ov::internal::exclusive_async_requests) {
         return {exclusive_async_requests};
-    } else if (name == ov::template_plugin::disable_transformations) {
+    } else if (name == ov::xsched_plugin::disable_transformations) {
         return {disable_transformations};
     } else if (name == ov::num_streams) {
         return {std::to_string(streams)};

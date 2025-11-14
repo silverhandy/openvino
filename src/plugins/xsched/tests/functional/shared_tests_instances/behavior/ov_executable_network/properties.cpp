@@ -16,7 +16,7 @@ const std::vector<ov::AnyMap> inproperties = {
 
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVClassCompiledModelPropertiesIncorrectTests,
-                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_XSCHED),
                                             ::testing::ValuesIn(inproperties)),
                          OVClassCompiledModelPropertiesIncorrectTests::getTestCaseName);
 
@@ -28,13 +28,13 @@ const std::vector<ov::AnyMap> default_properties = {
 
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVClassCompiledModelPropertiesDefaultTests,
-                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_XSCHED),
                                             ::testing::ValuesIn(default_properties)),
                          OVClassCompiledModelPropertiesDefaultTests::getTestCaseName);
 
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVCompiledModelPropertiesDefaultSupportedTests,
-                         ::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                         ::testing::Values(ov::test::utils::DEVICE_XSCHED),
                          OVCompiledModelPropertiesDefaultSupportedTests::getTestCaseName);
 
 const std::vector<ov::AnyMap> properties = {
@@ -44,25 +44,25 @@ const std::vector<ov::AnyMap> properties = {
 
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVClassCompiledModelPropertiesTests,
-                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_XSCHED),
                                             ::testing::ValuesIn(properties)),
                          OVClassCompiledModelPropertiesTests::getTestCaseName);
 
 INSTANTIATE_TEST_SUITE_P(smoke_OVClassCompiledModelEmptyPropertiesTests,
                          OVClassCompiledModelEmptyPropertiesTests,
-                         ::testing::Values(ov::test::utils::DEVICE_TEMPLATE));
+                         ::testing::Values(ov::test::utils::DEVICE_XSCHED));
 
 // OV Class Load network
 
 INSTANTIATE_TEST_SUITE_P(smoke_OVCompiledModelIncorrectDevice,
                          OVCompiledModelIncorrectDevice,
-                         ::testing::Values(ov::test::utils::DEVICE_TEMPLATE));
+                         ::testing::Values(ov::test::utils::DEVICE_XSCHED));
 
-const std::vector<std::tuple<std::string, std::pair<ov::AnyMap, std::string>>> GetMetricTest_ExecutionDevice_TEMPLATE =
-    {{ov::test::utils::DEVICE_TEMPLATE, std::make_pair(ov::AnyMap{}, "TEMPLATE.0")}};
+const std::vector<std::tuple<std::string, std::pair<ov::AnyMap, std::string>>> GetMetricTest_ExecutionDevice_XSCHED =
+    {{ov::test::utils::DEVICE_XSCHED, std::make_pair(ov::AnyMap{}, "XSCHED.0")}};
 
 INSTANTIATE_TEST_SUITE_P(smoke_OVClassCompiledModelGetPropertyTest,
                          OVClassCompiledModelGetPropertyTest_EXEC_DEVICES,
-                         ::testing::ValuesIn(GetMetricTest_ExecutionDevice_TEMPLATE));
+                         ::testing::ValuesIn(GetMetricTest_ExecutionDevice_XSCHED));
 
 }  // namespace

@@ -18,7 +18,7 @@ using namespace ov;
 
 namespace reference_tests {
 
-CommonReferenceTest::CommonReferenceTest() : targetDevice("TEMPLATE") {
+CommonReferenceTest::CommonReferenceTest() : targetDevice("XSCHED") {
     core = test::utils::PluginCache::get().core(targetDevice);
 }
 

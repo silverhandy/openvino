@@ -9,8 +9,8 @@
 #include "sync_infer_request.hpp"
 
 // ! [async_infer_request:ctor]
-ov::template_plugin::AsyncInferRequest::AsyncInferRequest(
-    const std::shared_ptr<ov::template_plugin::InferRequest>& request,
+ov::xsched_plugin::AsyncInferRequest::AsyncInferRequest(
+    const std::shared_ptr<ov::xsched_plugin::InferRequest>& request,
     const std::shared_ptr<ov::threading::ITaskExecutor>& task_executor,
     const std::shared_ptr<ov::threading::ITaskExecutor>& wait_executor,
     const std::shared_ptr<ov::threading::ITaskExecutor>& callback_executor)
@@ -43,13 +43,13 @@ ov::template_plugin::AsyncInferRequest::AsyncInferRequest(
 // ! [async_infer_request:ctor]
 
 // ! [async_infer_request:dtor]
-ov::template_plugin::AsyncInferRequest::~AsyncInferRequest() {
+ov::xsched_plugin::AsyncInferRequest::~AsyncInferRequest() {
     ov::IAsyncInferRequest::stop_and_wait();
 }
 // ! [async_infer_request:dtor]
 
 // ! [async_infer_request:cancel]
-void ov::template_plugin::AsyncInferRequest::cancel() {
+void ov::xsched_plugin::AsyncInferRequest::cancel() {
     ov::IAsyncInferRequest::cancel();
     m_cancel_callback();
 }

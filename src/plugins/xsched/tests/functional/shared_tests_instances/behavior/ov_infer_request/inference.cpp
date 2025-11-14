@@ -14,7 +14,7 @@ using namespace ov;
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVInferRequestInferenceTests,
                          ::testing::Combine(::testing::Values(tensor_roi::roi_nchw(), tensor_roi::roi_1d()),
-                                            ::testing::Values(ov::test::utils::DEVICE_TEMPLATE)),
+                                            ::testing::Values(ov::test::utils::DEVICE_XSCHED)),
                          OVInferRequestInferenceTests::getTestCaseName);
 
 }  // namespace

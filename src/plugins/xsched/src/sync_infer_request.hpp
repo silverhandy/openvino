@@ -20,7 +20,7 @@
 #include "openvino/runtime/profiling_info.hpp"
 
 namespace ov {
-namespace template_plugin {
+namespace xsched_plugin {
 
 // forward declaration
 class CompiledModel;
@@ -30,14 +30,14 @@ struct XschedPendingCommand;
 // ! [infer_request:header]
 class InferRequest : public ov::ISyncInferRequest {
 public:
-    explicit InferRequest(const std::shared_ptr<const ov::template_plugin::CompiledModel>& compiled_model);
+    explicit InferRequest(const std::shared_ptr<const ov::xsched_plugin::CompiledModel>& compiled_model);
     ~InferRequest();
 
     void infer() override;
     std::vector<ov::SoPtr<ov::IVariableState>> query_state() const override;
     std::vector<ov::ProfilingInfo> get_profiling_info() const override;
 
-    // pipeline methods-stages which are used in async infer request implementation and assigned to particular executor
+    // Pipeline stage helpers used by the async infer request implementation and bound to specific executors
     void infer_preprocess();
     void start_pipeline();
     void wait_pipeline();
@@ -54,7 +54,7 @@ private:
     void finalize_pending(const XschedPendingCommand& pending);
     void reset_profiling();
 
-    std::shared_ptr<const CompiledModel> get_template_model() const;
+    std::shared_ptr<const CompiledModel> get_xsched_model() const;
 
     enum { Preprocess, Postprocess, StartPipeline, WaitPipeline, numOfStages };
 
@@ -70,5 +70,5 @@ private:
 };
 // ! [infer_request:header]
 
-}  // namespace template_plugin
+}  // namespace xsched_plugin
 }  // namespace ov

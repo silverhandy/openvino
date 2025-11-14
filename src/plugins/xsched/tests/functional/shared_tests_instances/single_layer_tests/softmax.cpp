@@ -37,7 +37,7 @@ const auto params2D_static =
                      ::testing::Values(ov::element::dynamic),
                      testing::ValuesIn(ov::test::static_shapes_to_test_representation(inputStaticShape2D)),
                      testing::ValuesIn(axis2D),
-                     testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                     testing::Values(ov::test::utils::DEVICE_XSCHED),
                      testing::Values(ov::AnyMap()));
 
 const auto params2D_dynamic = testing::Combine(testing::ValuesIn(netPrecisions),
@@ -45,7 +45,7 @@ const auto params2D_dynamic = testing::Combine(testing::ValuesIn(netPrecisions),
                                                ::testing::Values(ov::element::dynamic),
                                                testing::ValuesIn(inputDynamicShape2D),
                                                testing::ValuesIn(axis2D),
-                                               testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                                               testing::Values(ov::test::utils::DEVICE_XSCHED),
                                                testing::Values(ov::AnyMap()));
 
 INSTANTIATE_TEST_SUITE_P(smoke_SoftMax2D_static,
@@ -82,7 +82,7 @@ const auto params4Dstatic =
                      ::testing::Values(ov::element::dynamic),
                      testing::ValuesIn(ov::test::static_shapes_to_test_representation(inputStaticShape4D)),
                      testing::ValuesIn(axis4D),
-                     testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                     testing::Values(ov::test::utils::DEVICE_XSCHED),
                      testing::Values(ov::AnyMap()));
 
 const auto params4Ddynamic = testing::Combine(testing::ValuesIn(netPrecisions4D),
@@ -90,7 +90,7 @@ const auto params4Ddynamic = testing::Combine(testing::ValuesIn(netPrecisions4D)
                                               ::testing::Values(ov::element::dynamic),
                                               testing::ValuesIn(inputDynamicShape4D),
                                               testing::ValuesIn(axis4D),
-                                              testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                                              testing::Values(ov::test::utils::DEVICE_XSCHED),
                                               testing::Values(ov::AnyMap()));
 
 INSTANTIATE_TEST_SUITE_P(smoke_SoftMax4D_static, SoftMax8LayerTest, params4Dstatic, SoftMax8LayerTest::getTestCaseName);
@@ -128,7 +128,7 @@ const auto params5Dstatic =
                      ::testing::Values(ov::element::dynamic),
                      testing::ValuesIn(ov::test::static_shapes_to_test_representation(inputStaticShape5D)),
                      testing::ValuesIn(axis5D),
-                     testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                     testing::Values(ov::test::utils::DEVICE_XSCHED),
                      testing::Values(ov::AnyMap()));
 
 const auto params5Ddynamic = testing::Combine(testing::ValuesIn(netPrecisions5D),
@@ -136,7 +136,7 @@ const auto params5Ddynamic = testing::Combine(testing::ValuesIn(netPrecisions5D)
                                               ::testing::Values(ov::element::dynamic),
                                               testing::ValuesIn(inputDynamicShape5D),
                                               testing::ValuesIn(axis5D),
-                                              testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                                              testing::Values(ov::test::utils::DEVICE_XSCHED),
                                               testing::Values(ov::AnyMap()));
 
 INSTANTIATE_TEST_SUITE_P(smoke_SoftMax5D_static, SoftMax8LayerTest, params5Dstatic, SoftMax8LayerTest::getTestCaseName);

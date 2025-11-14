@@ -80,7 +80,7 @@ using namespace ov;
 
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVInferRequestBatchedTests,
-                         ::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                         ::testing::Values(ov::test::utils::DEVICE_XSCHED),
                          OVInferRequestBatchedTests::getTestCaseName);
 
 }  // namespace

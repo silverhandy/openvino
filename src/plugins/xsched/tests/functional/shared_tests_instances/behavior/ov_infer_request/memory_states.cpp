@@ -10,10 +10,10 @@ using ov::test::behavior::OVInferRequestVariableStateTest;
 
 std::vector<memoryStateParams> memoryStateTestCases = {memoryStateParams(OVInferRequestVariableStateTest::get_network(),
                                                                          {"c_1-3", "r_1-3"},
-                                                                         ov::test::utils::DEVICE_TEMPLATE,
+                                                                         ov::test::utils::DEVICE_XSCHED,
                                                                          {})};
 
-INSTANTIATE_TEST_SUITE_P(smoke_Template_BehaviorTests,
+INSTANTIATE_TEST_SUITE_P(smoke_Xsched_BehaviorTests,
                          OVInferRequestVariableStateTest,
                          ::testing::ValuesIn(memoryStateTestCases),
                          OVInferRequestVariableStateTest::getTestCaseName);

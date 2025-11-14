@@ -12,11 +12,11 @@
 #include "openvino/itt.hpp"
 
 namespace ov {
-namespace template_plugin {
+namespace xsched_plugin {
 namespace itt {
 namespace domains {
 OV_ITT_DOMAIN(XSchedPlugin);
 }
 }  // namespace itt
-}  // namespace template_plugin
+}  // namespace xsched_plugin
 }  // namespace ov

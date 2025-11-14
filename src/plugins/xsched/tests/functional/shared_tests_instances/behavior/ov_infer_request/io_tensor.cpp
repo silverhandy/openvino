@@ -13,7 +13,7 @@ const std::vector<ov::AnyMap> configs = {{}};
 
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVInferRequestIOTensorTest,
-                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_XSCHED),
                                             ::testing::ValuesIn(configs)),
                          OVInferRequestIOTensorTest::getTestCaseName);
 
@@ -41,7 +41,7 @@ const std::vector<ov::AnyMap> emptyConfigs = {{}};
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVInferRequestCheckTensorPrecision,
                          ::testing::Combine(::testing::ValuesIn(prcs),
-                                            ::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                                            ::testing::Values(ov::test::utils::DEVICE_XSCHED),
                                             ::testing::ValuesIn(emptyConfigs)),
                          OVInferRequestCheckTensorPrecision::getTestCaseName);
 }  // namespace

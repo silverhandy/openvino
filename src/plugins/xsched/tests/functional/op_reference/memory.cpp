@@ -276,7 +276,7 @@ protected:
     ov::CompiledModel executableNetwork;
     ov::InferRequest inferRequest;
 
-    ReferenceMemoryTest() : targetDevice("TEMPLATE"), function(), executableNetwork(), inferRequest() {
+    ReferenceMemoryTest() : targetDevice("XSCHED"), function(), executableNetwork(), inferRequest() {
         core = ov::test::utils::PluginCache::get().core(targetDevice);
     };
 

@@ -11,17 +11,17 @@ namespace ov::test::behavior {
 const std::vector<ov::AnyMap> configs = {
     {},
 };
-const std::vector<ov::AnyMap> swPluginConfigs = {{ov::device::priorities(ov::test::utils::DEVICE_TEMPLATE)}};
+const std::vector<ov::AnyMap> swPluginConfigs = {{ov::device::priorities(ov::test::utils::DEVICE_XSCHED)}};
 
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVCompiledModelBaseTest,
-                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_XSCHED),
                                             ::testing::ValuesIn(configs)),
                          OVCompiledModelBaseTest::getTestCaseName);
 
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVCompiledModelBaseTestOptional,
-                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_XSCHED),
                                             ::testing::ValuesIn(configs)),
                          OVCompiledModelBaseTestOptional::getTestCaseName);
 

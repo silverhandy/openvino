@@ -10,7 +10,7 @@ namespace behavior {
 
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          VersionTests,
-                         ::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                         ::testing::Values(ov::test::utils::DEVICE_XSCHED),
                          VersionTests::getTestCaseName);
 
 }  // namespace behavior

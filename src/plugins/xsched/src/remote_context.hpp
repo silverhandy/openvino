@@ -5,7 +5,7 @@
 #include "openvino/runtime/iremote_context.hpp"
 
 namespace ov {
-namespace template_plugin {
+namespace xsched_plugin {
 
 // ! [remote_context:header]
 class RemoteContext : public ov::IRemoteContext {
@@ -23,5 +23,5 @@ private:
 };
 // ! [remote_context:header]
 
-}  // namespace template_plugin
+}  // namespace xsched_plugin
 }  // namespace ov

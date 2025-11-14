@@ -13,7 +13,7 @@
 #include "openvino/runtime/threading/istreams_executor.hpp"
 
 namespace ov {
-namespace template_plugin {
+namespace xsched_plugin {
 
 // ! [configuration:header]
 
@@ -79,5 +79,5 @@ struct Configuration {
 };
 // ! [configuration:header]
 
-}  // namespace template_plugin
+}  // namespace xsched_plugin
 }  // namespace ov

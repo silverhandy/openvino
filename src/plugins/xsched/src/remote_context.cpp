@@ -11,10 +11,10 @@
 #include "openvino/core/type/element_type_traits.hpp"
 #include "openvino/runtime/itensor.hpp"
 #include "remote_tensor.hpp"
-#include "template/remote_tensor.hpp"
+#include "xsched/remote_tensor.hpp"
 
 namespace ov {
-namespace template_plugin {
+namespace xsched_plugin {
 
 // ! [vector_impl_t:implementation]
 template <class T>
@@ -43,7 +43,7 @@ public:
         : m_element_type{element_type},
           m_shape{shape},
           m_data(ov::shape_size(shape)),
-          m_dev_name("TEMPLATE"),
+          m_dev_name("XSCHED"),
           m_properties{{ov::device::full_name.name(), m_dev_name},
                        {"vector_data", m_data},
                        {"vector_data_ptr", static_cast<void*>(m_data.data())}} {
@@ -84,7 +84,7 @@ public:
 // ! [vector_impl_t:implementation]
 
 // ! [remote_context:ctor]
-RemoteContext::RemoteContext() : m_name("TEMPLATE") {}
+RemoteContext::RemoteContext() : m_name("XSCHED") {}
 // ! [remote_context:ctor]
 
 // ! [remote_context:get_device_name]
@@ -154,5 +154,5 @@ ov::SoPtr<ov::IRemoteTensor> RemoteContext::create_tensor(const ov::element::Typ
 }
 // ! [remote_context:create_tensor]
 
-}  // namespace template_plugin
+}  // namespace xsched_plugin
 }  // namespace ov

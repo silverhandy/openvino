@@ -19,16 +19,16 @@ namespace {
 
 INSTANTIATE_TEST_SUITE_P(smoke_OVClassModelTestP,
                          OVClassModelTestP,
-                         ::testing::Values(ov::test::utils::DEVICE_TEMPLATE));
+                         ::testing::Values(ov::test::utils::DEVICE_XSCHED));
 
 INSTANTIATE_TEST_SUITE_P(smoke_OVClassModelOptionalTestP,
                          OVClassModelOptionalTestP,
-                         ::testing::Values(ov::test::utils::DEVICE_TEMPLATE));
+                         ::testing::Values(ov::test::utils::DEVICE_XSCHED));
 
-TEST(OVClassBasicPropsTest, smoke_TEMPLATEGetSetConfigNoThrow) {
+TEST(OVClassBasicPropsTest, smoke_XSCHEDGetSetConfigNoThrow) {
     ov::Core core = ov::test::utils::create_core();
 
-    auto device_name = ov::test::utils::DEVICE_TEMPLATE;
+    auto device_name = ov::test::utils::DEVICE_XSCHED;
 
     for (auto&& property : core.get_property(device_name, ov::supported_properties)) {
         if (ov::device::id == property) {
@@ -52,6 +52,6 @@ TEST(OVClassBasicPropsTest, smoke_TEMPLATEGetSetConfigNoThrow) {
 
 INSTANTIATE_TEST_SUITE_P(smoke_OVClassQueryModelTest,
                          OVClassQueryModelTest,
-                         ::testing::Values(ov::test::utils::DEVICE_TEMPLATE));
+                         ::testing::Values(ov::test::utils::DEVICE_XSCHED));
 
 }  // namespace

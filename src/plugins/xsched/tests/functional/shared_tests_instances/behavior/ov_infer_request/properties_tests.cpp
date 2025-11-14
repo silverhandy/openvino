@@ -14,7 +14,7 @@ const std::vector<ov::AnyMap> configs = {{}};
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          InferRequestPropertiesTest,
                          ::testing::Combine(::testing::Values(1u),
-                                            ::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                                            ::testing::Values(ov::test::utils::DEVICE_XSCHED),
                                             ::testing::ValuesIn(configs)),
                          InferRequestPropertiesTest::getTestCaseName);
 

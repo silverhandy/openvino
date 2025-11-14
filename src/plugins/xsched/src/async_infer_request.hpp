@@ -11,7 +11,7 @@
 #include "sync_infer_request.hpp"
 
 namespace ov {
-namespace template_plugin {
+namespace xsched_plugin {
 
 // ! [async_infer_request:header]
 class AsyncInferRequest : public ov::IAsyncInferRequest {
@@ -30,5 +30,5 @@ private:
 };
 // ! [async_infer_request:header]
 
-}  // namespace template_plugin
+}  // namespace xsched_plugin
 }  // namespace ov

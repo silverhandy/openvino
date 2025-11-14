@@ -19,8 +19,8 @@ using ov::test::behavior::PluginParameter;
 INSTANTIATE_TEST_SUITE_P(smoke_manyTargetInputs,
                          OVHeteroSyntheticTest,
                          ::testing::Combine(::testing::Values(std::vector<PluginParameter>{
-                                                {"TEMPLATE0", "openvino_template_plugin"},
-                                                {"TEMPLATE1", "openvino_template_plugin"}}),
+                                                {"XSCHED0", ov::test::utils::XSCHED_LIB},
+                                                {"XSCHED1", ov::test::utils::XSCHED_LIB}}),
                                             ::testing::ValuesIn(OVHeteroSyntheticTest::withMajorNodesFunctions(
                                                 [] {
                                                     return ov::test::utils::make_conv_pool2_relu2();
@@ -32,16 +32,16 @@ INSTANTIATE_TEST_SUITE_P(smoke_manyTargetInputs,
 INSTANTIATE_TEST_SUITE_P(smoke_SingleMajorNode,
                          OVHeteroSyntheticTest,
                          ::testing::Combine(::testing::Values(std::vector<PluginParameter>{
-                                                {"TEMPLATE0", "openvino_template_plugin"},
-                                                {"TEMPLATE1", "openvino_template_plugin"}}),
+                                                {"XSCHED0", ov::test::utils::XSCHED_LIB},
+                                                {"XSCHED1", ov::test::utils::XSCHED_LIB}}),
                                             ::testing::ValuesIn(OVHeteroSyntheticTest::_singleMajorNodeFunctions)),
                          OVHeteroSyntheticTest::getTestCaseName);
 
 INSTANTIATE_TEST_SUITE_P(nightly_RandomMajorNodes,
                          OVHeteroSyntheticTest,
                          ::testing::Combine(::testing::Values(std::vector<PluginParameter>{
-                                                {"TEMPLATE0", "openvino_template_plugin"},
-                                                {"TEMPLATE1", "openvino_template_plugin"}}),
+                                                {"XSCHED0", ov::test::utils::XSCHED_LIB},
+                                                {"XSCHED1", ov::test::utils::XSCHED_LIB}}),
                                             ::testing::ValuesIn(OVHeteroSyntheticTest::_randomMajorNodeFunctions)),
                          OVHeteroSyntheticTest::getTestCaseName);
 
@@ -54,8 +54,8 @@ static std::vector<std::function<std::shared_ptr<ov::Model>()>> dynamicBuilders 
 INSTANTIATE_TEST_SUITE_P(
     smoke_NonZeroMajorNode_dynamic,
     OVHeteroSyntheticTest,
-    ::testing::Combine(::testing::Values(std::vector<PluginParameter>{{"TEMPLATE0", "openvino_template_plugin"},
-                                                                      {"TEMPLATE1", "openvino_template_plugin"}}),
+    ::testing::Combine(::testing::Values(std::vector<PluginParameter>{{"XSCHED0", ov::test::utils::XSCHED_LIB},
+                                                                      {"XSCHED1", ov::test::utils::XSCHED_LIB}}),
                        ::testing::ValuesIn(OVHeteroSyntheticTest::withMajorNodesFunctions(dynamicBuilders.front(),
                                                                                           {"nonZero_1"}))),
     OVHeteroSyntheticTest::getTestCaseName);
@@ -63,8 +63,8 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     smoke_NonZeroMajorNode_dynamic_batch,
     OVHeteroSyntheticTest,
-    ::testing::Combine(::testing::Values(std::vector<PluginParameter>{{"TEMPLATE0", "openvino_template_plugin"},
-                                                                      {"TEMPLATE1", "openvino_template_plugin"}}),
+    ::testing::Combine(::testing::Values(std::vector<PluginParameter>{{"XSCHED0", ov::test::utils::XSCHED_LIB},
+                                                                      {"XSCHED1", ov::test::utils::XSCHED_LIB}}),
                        ::testing::ValuesIn(OVHeteroSyntheticTest::withMajorNodesFunctions(dynamicBuilders.front(),
                                                                                           {"nonZero_1"},
                                                                                           true))),
@@ -73,32 +73,32 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     smoke_SingleMajorNode_dynamic,
     OVHeteroSyntheticTest,
-    ::testing::Combine(::testing::Values(std::vector<PluginParameter>{{"TEMPLATE0", "openvino_template_plugin"},
-                                                                      {"TEMPLATE1", "openvino_template_plugin"}}),
+    ::testing::Combine(::testing::Values(std::vector<PluginParameter>{{"XSCHED0", ov::test::utils::XSCHED_LIB},
+                                                                      {"XSCHED1", ov::test::utils::XSCHED_LIB}}),
                        ::testing::ValuesIn(OVHeteroSyntheticTest::singleMajorNodeFunctions(dynamicBuilders))),
     OVHeteroSyntheticTest::getTestCaseName);
 
 INSTANTIATE_TEST_SUITE_P(
     nightly_RandomMajorNodes_dynamic,
     OVHeteroSyntheticTest,
-    ::testing::Combine(::testing::Values(std::vector<PluginParameter>{{"TEMPLATE0", "openvino_template_plugin"},
-                                                                      {"TEMPLATE1", "openvino_template_plugin"}}),
+    ::testing::Combine(::testing::Values(std::vector<PluginParameter>{{"XSCHED0", ov::test::utils::XSCHED_LIB},
+                                                                      {"XSCHED1", ov::test::utils::XSCHED_LIB}}),
                        ::testing::ValuesIn(OVHeteroSyntheticTest::randomMajorNodeFunctions(dynamicBuilders))),
     OVHeteroSyntheticTest::getTestCaseName);
 
 INSTANTIATE_TEST_SUITE_P(
     smoke_SingleMajorNode_dynamic_batch,
     OVHeteroSyntheticTest,
-    ::testing::Combine(::testing::Values(std::vector<PluginParameter>{{"TEMPLATE0", "openvino_template_plugin"},
-                                                                      {"TEMPLATE1", "openvino_template_plugin"}}),
+    ::testing::Combine(::testing::Values(std::vector<PluginParameter>{{"XSCHED0", ov::test::utils::XSCHED_LIB},
+                                                                      {"XSCHED1", ov::test::utils::XSCHED_LIB}}),
                        ::testing::ValuesIn(OVHeteroSyntheticTest::singleMajorNodeFunctions(dynamicBuilders, true))),
     OVHeteroSyntheticTest::getTestCaseName);
 
 INSTANTIATE_TEST_SUITE_P(
     nightly_RandomMajorNodes_dynamic_batch,
     OVHeteroSyntheticTest,
-    ::testing::Combine(::testing::Values(std::vector<PluginParameter>{{"TEMPLATE0", "openvino_template_plugin"},
-                                                                      {"TEMPLATE1", "openvino_template_plugin"}}),
+    ::testing::Combine(::testing::Values(std::vector<PluginParameter>{{"XSCHED0", ov::test::utils::XSCHED_LIB},
+                                                                      {"XSCHED1", ov::test::utils::XSCHED_LIB}}),
                        ::testing::ValuesIn(OVHeteroSyntheticTest::randomMajorNodeFunctions(dynamicBuilders, true))),
     OVHeteroSyntheticTest::getTestCaseName);
 

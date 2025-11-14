@@ -16,7 +16,7 @@ const std::vector<ov::AnyMap> inproperties = {
 
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVPropertiesIncorrectTests,
-                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_XSCHED),
                                             ::testing::ValuesIn(inproperties)),
                          OVPropertiesIncorrectTests::getTestCaseName);
 
@@ -27,13 +27,13 @@ const std::vector<ov::AnyMap> default_properties = {
 
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVPropertiesDefaultTests,
-                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_XSCHED),
                                             ::testing::ValuesIn(default_properties)),
                          OVPropertiesDefaultTests::getTestCaseName);
 
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVPropertiesDefaultSupportedTests,
-                         ::testing::Values(ov::test::utils::DEVICE_TEMPLATE));
+                         ::testing::Values(ov::test::utils::DEVICE_XSCHED));
 
 const std::vector<ov::AnyMap> properties = {
     {ov::enable_profiling(true)},
@@ -42,7 +42,7 @@ const std::vector<ov::AnyMap> properties = {
 
 INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
                          OVPropertiesTests,
-                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+                         ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_XSCHED),
                                             ::testing::ValuesIn(properties)),
                          OVPropertiesTests::getTestCaseName);
 
@@ -52,12 +52,12 @@ INSTANTIATE_TEST_SUITE_P(smoke_BehaviorTests,
 
 INSTANTIATE_TEST_SUITE_P(smoke_OVGetMetricPropsTest,
                          OVGetMetricPropsTest,
-                         ::testing::Values(ov::test::utils::DEVICE_TEMPLATE));
+                         ::testing::Values(ov::test::utils::DEVICE_XSCHED));
 
 INSTANTIATE_TEST_SUITE_P(
     smoke_OVCheckGetSupportedROMetricsPropsTests,
     OVCheckGetSupportedROMetricsPropsTests,
-    ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_TEMPLATE),
+    ::testing::Combine(::testing::Values(ov::test::utils::DEVICE_XSCHED),
                        ::testing::ValuesIn(OVCheckGetSupportedROMetricsPropsTests::configureProperties(
                            {ov::device::full_name.name()}))),
     OVCheckGetSupportedROMetricsPropsTests::getTestCaseName);
@@ -67,6 +67,6 @@ INSTANTIATE_TEST_SUITE_P(
 //
 INSTANTIATE_TEST_SUITE_P(smoke_OVBasicPropertiesTestsP,
                          OVBasicPropertiesTestsP,
-                         ::testing::Values(std::make_pair("openvino_template_plugin",
-                                                          ov::test::utils::DEVICE_TEMPLATE)));
+                         ::testing::Values(std::make_pair(ov::test::utils::XSCHED_LIB,
+                                                          ov::test::utils::DEVICE_XSCHED)));
 }  // namespace

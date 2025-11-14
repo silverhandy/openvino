@@ -36,9 +36,9 @@ ov::ProfilingInfo make_profiling_info(const std::string& name, std::chrono::stea
 }  // namespace
 
 // ! [infer_request:ctor]
-ov::template_plugin::InferRequest::InferRequest(const std::shared_ptr<const ov::template_plugin::CompiledModel>& model)
+ov::xsched_plugin::InferRequest::InferRequest(const std::shared_ptr<const ov::xsched_plugin::CompiledModel>& model)
     : ov::ISyncInferRequest(std::static_pointer_cast<const ov::ICompiledModel>(model)) {
-    auto compiled = get_template_model();
+    auto compiled = get_xsched_model();
     auto request_id = std::to_string(compiled->m_request_id.fetch_add(1));
     std::string name = compiled->m_model->get_friendly_name() + "_Req" + request_id;
 
@@ -78,11 +78,11 @@ ov::template_plugin::InferRequest::InferRequest(const std::shared_ptr<const ov::
 // ! [infer_request:ctor]
 
 // ! [infer_request:dtor]
-ov::template_plugin::InferRequest::~InferRequest() = default;
+ov::xsched_plugin::InferRequest::~InferRequest() = default;
 // ! [infer_request:dtor]
 
 // ! [infer_request:set_tensors_impl]
-void ov::template_plugin::InferRequest::set_tensors_impl(const ov::Output<const ov::Node> port,
+void ov::xsched_plugin::InferRequest::set_tensors_impl(const ov::Output<const ov::Node> port,
                                                          const std::vector<ov::SoPtr<ov::ITensor>>& tensors) {
     for (const auto& input : get_inputs()) {
         if (input == port) {
@@ -95,21 +95,21 @@ void ov::template_plugin::InferRequest::set_tensors_impl(const ov::Output<const 
 // ! [infer_request:set_tensors_impl]
 
 // ! [infer_request:query_state]
-std::vector<ov::SoPtr<ov::IVariableState>> ov::template_plugin::InferRequest::query_state() const {
+std::vector<ov::SoPtr<ov::IVariableState>> ov::xsched_plugin::InferRequest::query_state() const {
     return m_variable_states;
 }
 // ! [infer_request:query_state]
 
-std::shared_ptr<const ov::template_plugin::CompiledModel> ov::template_plugin::InferRequest::get_template_model()
+std::shared_ptr<const ov::xsched_plugin::CompiledModel> ov::xsched_plugin::InferRequest::get_xsched_model()
     const {
     auto& compiled_model = get_compiled_model();
-    auto template_model = std::dynamic_pointer_cast<const ov::template_plugin::CompiledModel>(compiled_model);
-    OPENVINO_ASSERT(template_model);
-    return template_model;
+    auto xsched_model = std::dynamic_pointer_cast<const ov::xsched_plugin::CompiledModel>(compiled_model);
+    OPENVINO_ASSERT(xsched_model);
+    return xsched_model;
 }
 
 // ! [infer_request:infer]
-void ov::template_plugin::InferRequest::infer() {
+void ov::xsched_plugin::InferRequest::infer() {
     infer_preprocess();
     start_pipeline();
     wait_pipeline();
@@ -117,13 +117,13 @@ void ov::template_plugin::InferRequest::infer() {
 }
 // ! [infer_request:infer]
 
-void ov::template_plugin::InferRequest::reset_profiling() {
+void ov::xsched_plugin::InferRequest::reset_profiling() {
     m_stage_durations.fill(std::chrono::steady_clock::duration::zero());
     m_last_profiling.clear();
 }
 
 // ! [infer_request:infer_preprocess]
-void ov::template_plugin::InferRequest::infer_preprocess() {
+void ov::xsched_plugin::InferRequest::infer_preprocess() {
     OV_ITT_SCOPED_TASK(itt::domains::XSchedPlugin, m_profiling_task[Preprocess]);
     auto start = Time::now();
     reset_profiling();
@@ -135,7 +135,7 @@ void ov::template_plugin::InferRequest::infer_preprocess() {
 // ! [infer_request:infer_preprocess]
 
 // ! [infer_request:start_pipeline]
-void ov::template_plugin::InferRequest::start_pipeline() {
+void ov::xsched_plugin::InferRequest::start_pipeline() {
     OV_ITT_SCOPED_TASK(itt::domains::XSchedPlugin, m_profiling_task[StartPipeline]);
     auto start = Time::now();
     auto new_pending = m_runtime->enqueue(*this);
@@ -151,16 +151,13 @@ void ov::template_plugin::InferRequest::start_pipeline() {
 // ! [infer_request:start_pipeline]
 
 // ! [infer_request:wait_pipeline]
-void ov::template_plugin::InferRequest::wait_pipeline() {
+void ov::xsched_plugin::InferRequest::wait_pipeline() {
     OV_ITT_SCOPED_TASK(itt::domains::XSchedPlugin, m_profiling_task[WaitPipeline]);
     auto start = Time::now();
     std::shared_ptr<XschedPendingCommand> pending;
     {
         std::lock_guard<std::mutex> lock(m_pending_mutex);
         pending = m_pending;
-        if (pending) {
-            m_pending.reset();
-        }
     }
     if (pending) {
         try {
@@ -169,7 +166,9 @@ void ov::template_plugin::InferRequest::wait_pipeline() {
             m_stage_durations[WaitPipeline] = Time::now() - start;
             {
                 std::lock_guard<std::mutex> lock(m_pending_mutex);
-                m_pending.reset();
+                if (m_pending == pending) {
+                    m_pending.reset();
+                }
             }
             throw;
         }
@@ -179,7 +178,7 @@ void ov::template_plugin::InferRequest::wait_pipeline() {
 // ! [infer_request:wait_pipeline]
 
 // ! [infer_request:infer_postprocess]
-void ov::template_plugin::InferRequest::infer_postprocess() {
+void ov::xsched_plugin::InferRequest::infer_postprocess() {
     OV_ITT_SCOPED_TASK(itt::domains::XSchedPlugin, m_profiling_task[Postprocess]);
     auto start = Time::now();
 
@@ -199,13 +198,13 @@ void ov::template_plugin::InferRequest::infer_postprocess() {
 // ! [infer_request:infer_postprocess]
 
 // ! [infer_request:get_profiling_info]
-std::vector<ov::ProfilingInfo> ov::template_plugin::InferRequest::get_profiling_info() const {
+std::vector<ov::ProfilingInfo> ov::xsched_plugin::InferRequest::get_profiling_info() const {
     return m_last_profiling;
 }
 // ! [infer_request:get_profiling_info]
 
 // ! [infer_request:cancel]
-void ov::template_plugin::InferRequest::cancel() {
+void ov::xsched_plugin::InferRequest::cancel() {
     m_cancelled.store(true, std::memory_order_relaxed);
     std::shared_ptr<XschedPendingCommand> pending;
     {
@@ -222,7 +221,7 @@ void ov::template_plugin::InferRequest::cancel() {
 }
 // ! [infer_request:cancel]
 
-void ov::template_plugin::InferRequest::execute_on_device(XschedPendingCommand& pending) {
+void ov::xsched_plugin::InferRequest::execute_on_device(XschedPendingCommand& pending) {
     if (m_cancelled.load(std::memory_order_relaxed)) {
         OPENVINO_THROW("Inference was cancelled");
     }
@@ -267,7 +266,7 @@ void ov::template_plugin::InferRequest::execute_on_device(XschedPendingCommand& 
     }
 }
 
-void ov::template_plugin::InferRequest::finalize_pending(const XschedPendingCommand& pending) {
+void ov::xsched_plugin::InferRequest::finalize_pending(const XschedPendingCommand& pending) {
     std::vector<ov::ProfilingInfo> info;
     info.reserve(m_stage_durations.size() + pending.profiling.size());
     info.emplace_back(make_profiling_info("xsched.preprocess", m_stage_durations[Preprocess]));

@@ -35,14 +35,13 @@ Verify the process is alive (for example, `pgrep xsched-server`) and adjust perm
 ```bash
 # Build or reuse an OpenVINO developer package
 cmake -S <openvino_src> -B <openvino_build> -DENABLE_TESTS=ON -DENABLE_FUNCTIONAL_TESTS=ON
-cmake --build <openvino_build> --target all -j
+cmake --build <openvino_build> --target all -j8
 
 # Configure and build the xsched plugin against that package
 cmake -S 3rd-party/openvino/src/plugins/xsched \
 	  -B 3rd-party/openvino/src/plugins/xsched/build \
-	  -DOpenVINODeveloperPackage_DIR=<openvino_build> \
 	  -DENABLE_XSCHED_REGISTRATION=ON
-cmake --build 3rd-party/openvino/src/plugins/xsched/build --target install -j
+cmake --build 3rd-party/openvino/src/plugins/xsched/build --target install -j8
 ```
 
 The install step registers the plugin entry in `plugins.xml`. For manual deployment copy the generated `*.so`/`*.dll` and `plugin.xml` to a directory referenced by `OV_PLUGIN_PATH` or drop them into the OpenVINO installation’s `runtime/lib/intel64` folder.

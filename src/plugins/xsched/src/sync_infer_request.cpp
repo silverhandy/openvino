@@ -15,23 +15,23 @@
 #include "openvino/core/except.hpp"
 #include "openvino/runtime/make_tensor.hpp"
 #include "openvino/runtime/iasync_infer_request.hpp"
-#include "openvino/runtime/itensor.hpp"
-#include "openvino/runtime/so_ptr.hpp"
-#include "openvino/runtime/profiling_info.hpp"
-#include "compiled_model.hpp"
-#include "xsched_core.hpp"
 
-using Time = std::chrono::steady_clock;
+            const auto& inputs = get_inputs();
+            for (size_t i = 0; i < inputs.size(); ++i) {
+                auto tensor = get_tensor(inputs[i]);
+                device_request.set_tensor(inputs[i], tensor);
+            }
 
-namespace {
-
-ov::ProfilingInfo make_profiling_info(const std::string& name, std::chrono::steady_clock::duration duration) {
-    ov::ProfilingInfo info;
-    info.status = ov::ProfilingInfo::Status::EXECUTED;
-    info.node_name = name;
-    info.cpu_time = info.real_time = std::chrono::duration_cast<std::chrono::microseconds>(duration);
-    return info;
-}
+            std::vector<std::pair<ov::Output<const ov::Node>, ov::SoPtr<ov::ITensor>>> copy_back;
+            const auto& outputs = get_outputs();
+            for (size_t i = 0; i < outputs.size(); ++i) {
+                auto tensor = get_tensor(outputs[i]);
+                try {
+                    device_request.set_tensor(outputs[i], tensor);
+                } catch (const ov::Exception&) {
+                    copy_back.emplace_back(outputs[i], tensor);
+                }
+            }
 
 }  // namespace
 
@@ -227,43 +227,50 @@ void ov::xsched_plugin::InferRequest::execute_on_device(XschedPendingCommand& pe
     }
 
     OPENVINO_ASSERT(pending.device, "XSCHED pending command missing target device");
-    auto device_request = pending.device->compiled_model->create_infer_request();
+    ov::InferRequest device_request = pending.device->acquire_request();
     OPENVINO_ASSERT(device_request, "XSCHED device compiled model returned null infer request");
 
-    const auto& inputs = get_inputs();
-    for (size_t i = 0; i < inputs.size(); ++i) {
-        auto tensor = get_tensor(inputs[i]);
-        device_request->set_tensor(inputs[i], tensor);
-    }
-
-    std::vector<std::pair<ov::Output<const ov::Node>, ov::SoPtr<ov::ITensor>>> copy_back;
-    const auto& outputs = get_outputs();
-    for (size_t i = 0; i < outputs.size(); ++i) {
-        auto tensor = get_tensor(outputs[i]);
-        try {
-            device_request->set_tensor(outputs[i], tensor);
-        } catch (const ov::Exception&) {
-            copy_back.emplace_back(outputs[i], tensor);
+    try {
+        const auto& inputs = get_inputs();
+        for (size_t i = 0; i < inputs.size(); ++i) {
+            auto tensor = get_tensor(inputs[i]);
+            device_request.set_tensor(inputs[i], tensor);
         }
-    }
 
-    device_request->infer();
-
-    for (auto& entry : copy_back) {
-        auto device_tensor = device_request->get_tensor(entry.first);
-        if (device_tensor && entry.second) {
-            device_tensor->copy_to(entry.second._ptr);
+        std::vector<std::pair<ov::Output<const ov::Node>, ov::SoPtr<ov::ITensor>>> copy_back;
+        const auto& outputs = get_outputs();
+        for (size_t i = 0; i < outputs.size(); ++i) {
+            auto tensor = get_tensor(outputs[i]);
+            try {
+                device_request.set_tensor(outputs[i], tensor);
+            } catch (const ov::Exception&) {
+                copy_back.emplace_back(outputs[i], tensor);
+            }
         }
+
+        device_request.infer();
+
+        for (auto& entry : copy_back) {
+            auto device_tensor = device_request.get_tensor(entry.first);
+            if (device_tensor && entry.second) {
+                device_tensor->copy_to(entry.second._ptr);
+            }
+        }
+
+        if (pending.enable_profiling) {
+            pending.profiling.clear();
+            try {
+                auto internal = device_request.get_profiling_info();
+                pending.profiling.insert(pending.profiling.end(), internal.begin(), internal.end());
+            } catch (...) {
+            }
+        }
+    } catch (...) {
+        pending.device->release_request(std::move(device_request));
+        throw;
     }
 
-    if (pending.enable_profiling) {
-        pending.profiling.clear();
-        try {
-            auto internal = device_request->get_profiling_info();
-            pending.profiling.insert(pending.profiling.end(), internal.begin(), internal.end());
-        } catch (...) {
-        }
-    }
+    pending.device->release_request(std::move(device_request));
 }
 
 void ov::xsched_plugin::InferRequest::finalize_pending(const XschedPendingCommand& pending) {

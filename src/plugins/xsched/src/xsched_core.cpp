@@ -79,6 +79,24 @@ XschedCore::SoftwareHwQueue::SoftwareHwQueue(HwQueueHandle handle, XDevice devic
 
 XschedCore::SoftwareHwQueue::~SoftwareHwQueue() = default;
 
+ov::InferRequest XschedCore::DeviceRuntime::acquire_request() {
+    std::lock_guard<std::mutex> lock(request_pool_mutex);
+    if (!request_pool.empty()) {
+        auto request = std::move(request_pool.back());
+        request_pool.pop_back();
+        return request;
+    }
+    return compiled_model->create_infer_request();
+}
+
+void XschedCore::DeviceRuntime::release_request(ov::InferRequest&& request) {
+    if (!request) {
+        return;
+    }
+    std::lock_guard<std::mutex> lock(request_pool_mutex);
+    request_pool.emplace_back(std::move(request));
+}
+
 void XschedCore::SoftwareHwQueue::Launch(std::shared_ptr<xsched::preempt::HwCommand> hw_cmd) {
     auto callback = std::dynamic_pointer_cast<xsched::preempt::HwCallbackCommand>(hw_cmd);
     if (callback) {

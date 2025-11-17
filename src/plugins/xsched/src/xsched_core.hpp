@@ -20,6 +20,7 @@
 #include "config.hpp"
 #include "openvino/core/model.hpp"
 #include "openvino/runtime/icompiled_model.hpp"
+#include "openvino/runtime/infer_request.hpp"
 #include "openvino/runtime/so_ptr.hpp"
 #include "openvino/runtime/profiling_info.hpp"
 #include "openvino/runtime/tensor.hpp"
@@ -76,6 +77,11 @@ public:
         std::atomic<double> moving_avg{0.0};
         std::atomic<double> last_latency{0.0};
         std::atomic<double> weight{1.0};
+        std::mutex request_pool_mutex;
+        std::vector<ov::InferRequest> request_pool;
+
+        ov::InferRequest acquire_request();
+        void release_request(ov::InferRequest&& request);
     };
 
     struct DeviceGroup {

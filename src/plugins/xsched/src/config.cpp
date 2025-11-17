@@ -973,12 +973,29 @@ Configuration::Configuration(const ov::AnyMap& config, const Configuration& defa
                                value.as<std::string>());
             }
         } else if (ov::hint::num_requests == key) {
-            const auto& tmp_val = value.as<std::string>();
-            int tmp_i = std::stoi(tmp_val);
-            if (tmp_i >= 0)
-                num_requests = tmp_i;
-            else
-                OPENVINO_THROW("Incorrect value, it should be unsigned integer: ", key);
+            const auto tmp_val = ov::util::trim(value.as<std::string>());
+            if (!tmp_val.empty()) {
+                const auto tmp_lower = ov::util::to_lower(tmp_val);
+                if (tmp_lower == "auto" || tmp_lower == "default") {
+                    continue;
+                }
+                try {
+                    size_t processed = 0;
+                    int tmp_i = std::stoi(tmp_val, &processed);
+                    if (processed != tmp_val.size()) {
+                        throw std::invalid_argument{"unexpected characters present"};
+                    }
+                    if (tmp_i >= 0) {
+                        num_requests = tmp_i;
+                    } else if (throwOnUnsupported) {
+                        OPENVINO_THROW("Incorrect value, it should be unsigned integer: ", key);
+                    }
+                } catch (const std::exception&) {
+                    if (throwOnUnsupported) {
+                        OPENVINO_THROW("Incorrect value, it should be unsigned integer: ", key, ", got: ", tmp_val);
+                    }
+                }
+            }
         } else if (ov::log::level == key) {
             log_level = value.as<ov::log::Level>();
         } else if (ov::hint::model_priority == key) {

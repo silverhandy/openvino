@@ -1,7 +1,9 @@
 /* API config */
 var cx = '012886673101693426607:wjpczzz2qi3';
 var path = 'https://content.googleapis.com/discovery/v1/apis/customsearch/v1/rest';
-var apiKey = 'AIzaSyBpwSxfoP2T_EK62wwNhZ9zyxUzeRjmOwA';
+// API key removed from repository to avoid embedding secrets in source control.
+// If you need Google Custom Search integration for docs, inject an API key at build time.
+var apiKey = '';
 
 
 var potKeywords = ['int8', '8-bit', '8 bit', 'quantization', 'quantized', 

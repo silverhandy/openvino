@@ -37,6 +37,16 @@ void register_template_plugin(ov::Core& ov_core) noexcept {
     ov_core.register_plugin(plugin_path, ov::test::utils::DEVICE_TEMPLATE);
 }
 
+void register_xsched_plugin(ov::Core& ov_core) noexcept {
+    auto plugin_path =
+        ov::util::make_plugin_library_name(ov::test::utils::getExecutableDirectory(),
+                                           std::string(ov::test::utils::XSCHED_LIB) + OV_BUILD_POSTFIX);
+    if (!ov::util::file_exists(plugin_path)) {
+        return;
+    }
+    ov_core.register_plugin(plugin_path, ov::test::utils::DEVICE_XSCHED);
+}
+
 ov::Core create_core(const std::string& in_target_device) {
     ov::Core ov_core;
 
@@ -44,6 +54,7 @@ ov::Core create_core(const std::string& in_target_device) {
     register_plugin(ov_core);
     // Register Template plugin as a reference provider
     register_template_plugin(ov_core);
+    register_xsched_plugin(ov_core);
 #endif  // !OPENVINO_STATIC_LIBRARY && !USE_STATIC_IE
 
     if (available_devices.empty()) {
